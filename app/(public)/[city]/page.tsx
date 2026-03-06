@@ -1,10 +1,6 @@
 // app/(public)/[city]/page.tsx
-// ─────────────────────────────────────────────────────
-// URL: /hyderabad, /vizag, /vijayawada, /bangalore
-// Shows all published projects for that city
-// ISR: rebuilds when admin publishes a new project
-// ─────────────────────────────────────────────────────
-import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'  // ← change this import
+import { createClient } from '@/lib/supabase/server'   // ← keep for page data fetch
 import ProjectCard from '@/components/public/ProjectCard'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -12,21 +8,18 @@ import type { Project } from '@/types'
 
 export const revalidate = 3600
 
-// Tells Next.js which city pages to pre-build at deploy time [web:84]
+// ✅ Uses supabaseAdmin — no cookies, works at build time
 export async function generateStaticParams() {
-  const supabase = await createClient()
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('projects')
     .select('city_slug')
     .eq('published', true)
 
-  // Get unique city slugs
   const unique = [...new Set(data?.map((p) => p.city_slug) ?? [])]
   return unique.map((city_slug) => ({ city: city_slug }))
-  // Returns: [{ city: 'hyderabad' }, { city: 'vizag' }, ...]
 }
 
-// Generates SEO metadata dynamically per city [web:86]
+// ✅ generateMetadata runs per-request — createClient is fine here
 export async function generateMetadata({
   params,
 }: {
@@ -34,7 +27,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { city } = await params
   const cityName = city.charAt(0).toUpperCase() + city.slice(1)
-
   return {
     title: `Plots & Villas in ${cityName}`,
     description: `Browse all real estate projects in ${cityName}. Find plots, villas and townships with best pricing.`,
@@ -49,6 +41,7 @@ export async function generateMetadata({
 }
 
 async function getCityProjects(citySlug: string): Promise<Project[]> {
+  // ✅ createClient is fine here — runs inside a real page request
   const supabase = await createClient()
   const { data } = await supabase
     .from('projects')
@@ -68,15 +61,12 @@ export default async function CityPage({
   const { city } = await params
   const projects = await getCityProjects(city)
 
-  // If city has zero projects → show 404
   if (projects.length === 0) notFound()
 
-  const cityName = projects[0].city // Real name from DB e.g. "Hyderabad"
+  const cityName = projects[0].city
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
-
-      {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           Projects in {cityName}
@@ -85,8 +75,6 @@ export default async function CityPage({
           {projects.length} project{projects.length !== 1 ? 's' : ''} available
         </p>
       </div>
-
-      {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
           <ProjectCard key={project.id} project={project} />

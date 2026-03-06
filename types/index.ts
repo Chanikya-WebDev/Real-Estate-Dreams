@@ -75,3 +75,10 @@ export interface Lead {
 export interface ProjectWithMedia extends Project {
   project_media: ProjectMedia[]
 }
+
+// types/index.ts — add at the bottom
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void
+  }
+}

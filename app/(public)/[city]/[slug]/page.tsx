@@ -1,4 +1,5 @@
 // app/(public)/[city]/[slug]/page.tsx
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -11,10 +12,8 @@ import { MapPin, LayoutGrid, Maximize2, Trees, Phone } from 'lucide-react'
 
 export const revalidate = 3600
 
-// Pre-builds ALL project pages at deploy time [web:84]
 export async function generateStaticParams() {
-  const supabase = await createClient()
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('projects')
     .select('city_slug, slug')
     .eq('published', true)
@@ -23,12 +22,26 @@ export async function generateStaticParams() {
     city: p.city_slug,
     slug: p.slug,
   }))
+}
+
+// Pre-builds ALL project pages at deploy time [web:84]
+// export async function generateStaticParams() {
+//   const supabase = await createClient()
+//   const { data } = await supabase
+//     .from('projects')
+//     .select('city_slug, slug')
+//     .eq('published', true)
+
+//   return (data ?? []).map((p) => ({
+//     city: p.city_slug,
+//     slug: p.slug,
+//   }))
   // Returns: [
   //   { city: 'shadnagar', slug: 'sree-laxmi-balaji-township' },
   //   { city: 'hyderabad', slug: 'green-valley-villas' },
   //   ...
   // ]
-}
+// }
 
 // Fetch project + media in one query using Supabase joins
 async function getProject(
