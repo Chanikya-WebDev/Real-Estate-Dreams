@@ -1,8 +1,17 @@
-import type { NextConfig } from "next";
+// next.config.ts
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-    // reactCompiler:true,
-};
+  images: {
+    remotePatterns: [
+      {
+        // Allow next/image to optimize images from Cloudinary
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
