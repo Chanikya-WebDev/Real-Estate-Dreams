@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { Metadata } from 'next'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,12 +35,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 w-full max-w-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 sm:p-8 w-full max-w-sm">
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-gray-500 text-sm mt-1">YourBrand Realty</p>
+          <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
+          <p className="text-slate-600 text-sm mt-1">YourBrand Realty</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -55,7 +54,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-blue-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/30"
               placeholder="admin@yourbrand.com"
             />
           </div>
@@ -69,7 +68,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-blue-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/30"
               placeholder="••••••••"
             />
           </div>

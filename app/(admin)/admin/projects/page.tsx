@@ -19,8 +19,8 @@ export default async function ProjectsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-slate-900">
           Projects ({projects.length})
         </h1>
         <Link
@@ -32,15 +32,15 @@ export default async function ProjectsPage() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Project</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">City</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Actions</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-700">Project</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-700">City</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-700">Type</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-700">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-slate-700">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -53,7 +53,7 @@ export default async function ProjectsPage() {
             )}
             {projects.map((project) => (
               <tr key={project.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">
+                <td className="px-4 py-3 font-medium text-slate-900">
                   <div className="flex flex-col">
                     <span>
                       {project.name}
@@ -72,8 +72,8 @@ export default async function ProjectsPage() {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{project.city}</td>
-                <td className="px-4 py-3 capitalize text-gray-600">{project.project_type}</td>
+                <td className="px-4 py-3 text-slate-700">{project.city}</td>
+                <td className="px-4 py-3 capitalize text-slate-700">{project.project_type}</td>
                 <td className="px-4 py-3">
                   {project.published ? (
                     <span className="flex items-center gap-1 text-green-700 bg-green-50 px-2 py-1 rounded-full text-xs w-fit">
@@ -102,7 +102,7 @@ export default async function ProjectsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   )

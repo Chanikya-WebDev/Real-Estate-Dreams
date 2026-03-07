@@ -1,16 +1,9 @@
-// app/(public)/page.tsx
-// ─────────────────────────────────────────────────────
-// STATIC GENERATION (SSG)
-// Revalidates every 1 hour
-// Shows featured projects + city quick links
-// ─────────────────────────────────────────────────────
 import { createClient } from '@/lib/supabase/server'
 import ProjectCard from '@/components/public/ProjectCard'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { Project } from '@/types'
 
-// This page rebuilds every 1 hour automatically
 export const revalidate = 3600
 
 export const metadata: Metadata = {
@@ -23,7 +16,6 @@ export const metadata: Metadata = {
   },
 }
 
-// Cities for quick navigation
 const CITIES = [
   { name: 'Hyderabad', slug: 'hyderabad', emoji: '🏙️' },
   { name: 'Bangalore', slug: 'bangalore', emoji: '🌳' },
@@ -55,8 +47,6 @@ async function getLatestProjects(): Promise<Project[]> {
 }
 
 export default async function HomePage() {
-  // Both queries run in PARALLEL — not sequential
-  // This is the correct pattern for multiple DB calls in one page
   const [featuredProjects, latestProjects] = await Promise.all([
     getFeaturedProjects(),
     getLatestProjects(),
@@ -64,65 +54,46 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ── HERO SECTION ─────────────────────────── */}
-      <section className="bg-gradient-to-br from-blue-900 to-blue-700 text-white py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight">
-            Find Your Perfect Plot or Villa
-          </h1>
-          <p className="mt-4 text-blue-50 text-lg font-medium">
-            Premium projects across Hyderabad, Vizag, Vijayawada &amp; Bangalore
-          </p>
-          <Link
-            href="/search"
-            className="mt-8 inline-block bg-white text-blue-800 font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition"
-          >
-            Browse All Projects
-          </Link>
+      <section className="bg-gradient-to-br from-blue-700 via-indigo-700 to-cyan-700 px-4 py-16 text-white md:py-24">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl">Find Your Perfect Plot or Villa</h1>
+          <p className="mt-4 text-base font-medium text-blue-50 sm:text-lg">Premium projects across Hyderabad, Vizag, Vijayawada &amp; Bangalore</p>
+          <Link href="/search" className="mt-8 inline-block rounded-xl bg-amber-300 px-8 py-3 font-bold text-slate-900 shadow-lg transition hover:bg-amber-200">Browse All Projects</Link>
         </div>
       </section>
 
-      {/* ── CITY QUICK LINKS ─────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Browse by City</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <h2 className="mb-6 text-2xl font-extrabold text-slate-900">Browse by City</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {CITIES.map((city) => (
             <Link
               key={city.slug}
               href={`/${city.slug}`}
-              className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-4 hover:border-blue-400 hover:shadow-sm transition"
+              className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md"
             >
               <span className="text-2xl">{city.emoji}</span>
-              <span className="font-semibold text-gray-800">{city.name}</span>
+              <span className="font-bold text-slate-800">{city.name}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* ── FEATURED PROJECTS ────────────────────── */}
       {featuredProjects.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 pb-12">
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Featured Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+        <section className="mx-auto max-w-7xl px-4 pb-12">
+          <h2 className="mb-6 text-2xl font-extrabold text-slate-900">Featured Projects</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featuredProjects.map((project) => <ProjectCard key={project.id} project={project} />)}
           </div>
         </section>
       )}
 
-      {/* ── LATEST PROJECTS ──────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-extrabold text-gray-900">Latest Projects</h2>
-          <Link href="/search" className="text-blue-700 text-sm font-medium hover:underline">
-            View all →
-          </Link>
+      <section className="mx-auto max-w-7xl px-4 pb-16">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-extrabold text-slate-900">Latest Projects</h2>
+          <Link href="/search" className="text-sm font-semibold text-blue-700 hover:underline">View all →</Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {latestProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {latestProjects.map((project) => <ProjectCard key={project.id} project={project} />)}
         </div>
       </section>
     </>

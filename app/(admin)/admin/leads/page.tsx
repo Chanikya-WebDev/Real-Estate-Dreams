@@ -16,8 +16,8 @@ export default async function LeadsPage() {
   const leads = await getAllLeads()
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">
         Leads ({leads.length})
       </h1>
       <LeadsTable leads={leads} />
