@@ -1,5 +1,3 @@
-// components/public/Navbar.tsx
-// 'use client' because it has mobile menu toggle state
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
@@ -9,62 +7,49 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="sticky top-0 z-50 border-b border-blue-100 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="text-lg font-extrabold tracking-tight text-blue-800 sm:text-xl">
+          YourBrand Realty
+        </Link>
 
-          {/* Logo / Brand */}
-          <Link href="/" className="text-xl font-bold text-blue-700">
-            YourBrand Realty
-          </Link>
-
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-gray-600 hover:text-blue-700 transition">
-              Home
+        <div className="hidden items-center gap-6 md:flex">
+          {[
+            ['Home', '/'],
+            ['Projects', '/search'],
+            ['Hyderabad', '/hyderabad'],
+            ['Vijayawada', '/vijayawada'],
+            ['Vizag', '/vizag'],
+          ].map(([label, href]) => (
+            <Link key={href} href={href} className="text-sm font-semibold text-slate-700 transition hover:text-blue-700">
+              {label}
             </Link>
-            <Link href="/search" className="text-gray-600 hover:text-blue-700 transition">
-              Projects
-            </Link>
-            {/* Add city quick links */}
-            <Link href="/hyderabad" className="text-gray-600 hover:text-blue-700 transition">
-              Hyderabad
-            </Link>
-            <Link href="/vijayawada" className="text-gray-600 hover:text-blue-700 transition">
-              Vijayawada
-            </Link>
-            <Link href="/vizag" className="text-gray-600 hover:text-blue-700 transition">
-              Vizag
-            </Link>
-            <a
-              href="tel:+919876543210"
-              className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
-            >
-              <Phone size={16} />
-              Call Us
-            </a>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          ))}
+          <a href="tel:+919876543210" className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800">
+            <Phone size={16} />
+            Call Us
+          </a>
         </div>
+
+        <button
+          className="rounded-lg p-2 text-slate-800 hover:bg-blue-50 md:hidden"
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle menu"
+        >
+          {open ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {open && (
-        <div className="md:hidden bg-white border-t px-4 py-3 flex flex-col gap-3">
-          <Link href="/" onClick={() => setOpen(false)} className="text-gray-700 py-2">Home</Link>
-          <Link href="/search" onClick={() => setOpen(false)} className="text-gray-700 py-2">Projects</Link>
-          <Link href="/hyderabad" onClick={() => setOpen(false)} className="text-gray-700 py-2">Hyderabad</Link>
-          <Link href="/vijayawada" onClick={() => setOpen(false)} className="text-gray-700 py-2">Vijayawada</Link>
-          <Link href="/vizag" onClick={() => setOpen(false)} className="text-gray-700 py-2">Vizag</Link>
-          <a href="tel:+919876543210" className="text-blue-700 font-semibold py-2">📞 Call Us</a>
+        <div className="border-t border-blue-100 bg-white px-4 py-3 md:hidden">
+          <div className="flex flex-col gap-1">
+            <Link href="/" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Home</Link>
+            <Link href="/search" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Projects</Link>
+            <Link href="/hyderabad" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Hyderabad</Link>
+            <Link href="/vijayawada" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Vijayawada</Link>
+            <Link href="/vizag" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Vizag</Link>
+            <a href="tel:+919876543210" className="mt-2 rounded-lg bg-blue-700 px-3 py-2 text-center text-sm font-semibold text-white">📞 Call Us</a>
+          </div>
         </div>
       )}
     </nav>

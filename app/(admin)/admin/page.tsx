@@ -38,9 +38,9 @@ export default async function AdminDashboard() {
   ]
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
         <Link
           href="/admin/projects/new"
           className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800 transition"
@@ -56,12 +56,12 @@ export default async function AdminDashboard() {
           <Link
             key={label}
             href={href}
-            className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-sm transition"
+            className="bg-white rounded-2xl border border-blue-100 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+                <p className="text-slate-600 text-sm">{label}</p>
+                <p className="text-3xl font-bold text-slate-900 mt-1">{value}</p>
               </div>
               <div className={`p-3 rounded-xl ${color}`}>
                 <Icon size={22} />
@@ -72,9 +72,9 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Recent Leads */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-blue-100 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-900">Recent Leads</h2>
+          <h2 className="font-bold text-slate-900">Recent Leads</h2>
           <Link href="/admin/leads" className="text-blue-700 text-sm hover:underline">
             View all →
           </Link>
@@ -86,8 +86,8 @@ export default async function AdminDashboard() {
           {recentLeads.map((lead) => (
             <div key={lead.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
               <div>
-                <p className="font-medium text-gray-900 text-sm">{lead.name}</p>
-                <p className="text-gray-500 text-xs">{lead.phone} · {lead.project_name}</p>
+                <p className="font-medium text-slate-900 text-sm">{lead.name}</p>
+                <p className="text-slate-600 text-xs">{lead.phone} · {lead.project_name}</p>
               </div>
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                 lead.status === 'new'

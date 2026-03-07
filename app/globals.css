@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f8ff;
+  --foreground: #10223f;
 }
 
 @theme inline {
@@ -12,29 +12,40 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 10% 10%, #dbeafe 0, transparent 45%),
+    radial-gradient(circle at 90% 0%, #fef3c7 0, transparent 42%),
+    var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-/* app/globals.css — add after the @tailwind directives */
+
 @layer components {
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply mb-1 block text-sm font-semibold text-slate-700;
   }
+
   .input {
-    @apply w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm
-           focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500
-           bg-white text-gray-900;
+    @apply w-full rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm
+      placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40;
   }
+
+  .card {
+    @apply rounded-2xl border border-blue-100 bg-white/95 shadow-md;
+  }
+
+  .btn-primary {
+    @apply rounded-xl bg-blue-700 px-5 py-2.5 font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2;
+  }
+
   .error {
-    @apply text-red-500 text-xs mt-1;
+    @apply mt-1 text-xs font-medium text-red-700;
   }
 }
