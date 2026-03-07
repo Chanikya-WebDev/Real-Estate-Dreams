@@ -2,13 +2,14 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { PlusCircle, Pencil, Eye, EyeOff } from 'lucide-react'
+import DeleteProjectButton from '@/components/admin/DeleteProjectButton'
 
-export const revalidate = 0  // always fetch fresh data in admin
+export const revalidate = 0
 
 async function getAllProjects() {
   const { data } = await supabaseAdmin
     .from('projects')
-    .select('id, name, city, project_type, published, featured, created_at, cover_image_url')
+    .select('id, name, city, city_slug, slug, project_type, published, featured, created_at, cover_image_url')
     .order('created_at', { ascending: false })
   return data ?? []
 }
@@ -53,10 +54,23 @@ export default async function ProjectsPage() {
             {projects.map((project) => (
               <tr key={project.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">
-                  {project.name}
-                  {project.featured && (
-                    <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">Featured</span>
-                  )}
+                  <div className="flex flex-col">
+                    <span>
+                      {project.name}
+                      {project.featured && (
+                        <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">Featured</span>
+                      )}
+                    </span>
+                    {project.city_slug && project.slug && (
+                      <a
+                        href={`/${project.city_slug}/${project.slug}`}
+                        target="_blank"
+                        className="text-xs text-blue-500 hover:underline mt-0.5"
+                      >
+                        /{project.city_slug}/{project.slug} ↗
+                      </a>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{project.city}</td>
                 <td className="px-4 py-3 capitalize text-gray-600">{project.project_type}</td>
@@ -72,12 +86,18 @@ export default async function ProjectsPage() {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/projects/${project.id}/edit`}
-                    className="flex items-center gap-1.5 text-blue-700 hover:underline text-sm"
-                  >
-                    <Pencil size={13} /> Edit
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/admin/projects/${project.id}/edit`}
+                      className="flex items-center gap-1.5 text-blue-700 hover:underline text-sm"
+                    >
+                      <Pencil size={13} /> Edit
+                    </Link>
+                    <DeleteProjectButton
+                      projectId={project.id}
+                      projectName={project.name}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

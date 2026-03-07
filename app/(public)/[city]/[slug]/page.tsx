@@ -1,156 +1,335 @@
-// app/(public)/[city]/page.tsx
+// app/(public)/[city]/[slug]/page.tsx
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import ProjectCard from '@/components/public/ProjectCard'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
+import { cache } from 'react'
 import type { Metadata } from 'next'
-import type { Project } from '@/types'
-
+import type { ProjectWithMedia } from '@/types'
+import ProjectTabs from '@/components/public/ProjectTabs'
+import DeferredBookingForm from '@/components/public/DeferredBookingForm'
+import DeferredWhatsAppButton from '@/components/public/DeferredWhatsAppButton'
 
 export const revalidate = 3600
 
-// ── Pre-render all city pages at build time ─────────────────
+function pickNonEmpty(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim()
+    }
+  }
+  return ''
+}
+
 export async function generateStaticParams() {
   const { data } = await supabaseAdmin
     .from('projects')
-    .select('city_slug')
+    .select('city_slug, slug')
     .eq('published', true)
-
-  const unique = [...new Set(data?.map((p) => p.city_slug) ?? [])]
-  return unique.map((city_slug) => ({ city: city_slug }))
+  return (data ?? []).map((p) => ({ city: p.city_slug, slug: p.slug }))
 }
 
-// ── Dynamic SEO metadata per city ───────────────────────────
+const getProjectByCityAndSlug = cache(async (city: string, slug: string): Promise<ProjectWithMedia | null> => {
+  const { data } = await supabaseAdmin
+    .from('projects')
+    .select('*, project_media(*)')
+    .eq('city_slug', city)
+    .eq('slug', slug)
+    .eq('published', true)
+    .order('display_order', { referencedTable: 'project_media', ascending: true })
+    .single()
+
+  return data ?? null
+})
+
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ city: string }>
+  params: Promise<{ city: string; slug: string }>
 }): Promise<Metadata> {
-  const { city } = await params
-  const cityName = city.charAt(0).toUpperCase() + city.slice(1)
+  const { city, slug } = await params
+  const p = await getProjectByCityAndSlug(city, slug)
 
-  // Count published projects in this city for description
-  const { count } = await supabaseAdmin
-    .from('projects')
-    .select('id', { count: 'exact', head: true })
-    .eq('city_slug', city)
-    .eq('published', true)
+  if (!p) return { title: 'Project Not Found' }
 
-  const title       = `Plots & Villas in ${cityName} | GEM Group`
-  const description = `Browse ${count ?? ''} RERA approved plots and villa projects in ${cityName}. Best prices, bank loans available. Book a free site visit with GEM Group.`
-  const canonical   = `${process.env.NEXT_PUBLIC_SITE_URL}/${city}`
+  const fallbackTitle = `${p.name} | Villa Plots in ${p.city}`
+  const fallbackDescription =
+    `${p.total_plots ?? 'Premium'} plots in ${p.city}. From ${p.plot_size_min ?? 'select'} sq.yards. ` +
+    `${p.total_area ?? 'Prime'} acres. ${p.price_display ?? 'Best value pricing'}. RERA & DTCP approved. Bank loans available.`
+
+  const title = pickNonEmpty(p.seo_title, fallbackTitle)
+  const description = pickNonEmpty(
+    p.seo_description,
+    fallbackDescription,
+    `${p.name} premium plots in ${p.city}. Contact GEM Group Realty for pricing and site visit details.`,
+  )
+  const canonical = `${process.env.NEXT_PUBLIC_SITE_URL}/${city}/${slug}`
 
   return {
-    title,
-    description,
+    title, description,
     openGraph: {
-      title,
-      description,
-      url: canonical,
-      siteName: 'GEM Group Realty',
-      locale: 'en_IN',
-      type: 'website',
+      title, description, url: canonical, siteName: 'GEM Group Realty',
+      images: p.cover_image_url
+        ? [{ url: p.cover_image_url, width: 1200, height: 630, alt: p.name }] : [],
+      locale: 'en_IN', type: 'website',
     },
-    twitter: {
-      card: 'summary',
-      title,
-      description,
-    },
+    twitter: { card: 'summary_large_image', title, description,
+      images: p.cover_image_url ? [p.cover_image_url] : [] },
     alternates: { canonical },
     robots: { index: true, follow: true },
   }
 }
 
-// ── Fetch city projects ──────────────────────────────────────
-async function getCityProjects(citySlug: string): Promise<Project[]> {
-  const { data } = await supabaseAdmin
-    .from('projects')
-    .select('*')
-    .eq('published', true)
-    .eq('city_slug', citySlug)
-    .order('featured', { ascending: false })
-    .order('created_at', { ascending: false })
-  return data ?? []
+function buildSchemas(project: ProjectWithMedia, city: string, slug: string) {
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/${city}/${slug}`
+  return [
+    {
+      '@context': 'https://schema.org', '@type': 'RealEstateListing',
+      name: project.name,
+      description: project.seo_description ?? project.description ?? '',
+      url, image: project.cover_image_url ?? undefined,
+      datePosted: project.created_at,
+      offers: { '@type': 'Offer', price: project.price_per_sqyd ?? undefined,
+        priceCurrency: 'INR', availability: 'https://schema.org/InStock',
+        description: project.price_display ?? '' },
+      address: { '@type': 'PostalAddress', streetAddress: project.address ?? '',
+        addressLocality: project.city, addressRegion: project.state, addressCountry: 'IN' },
+      ...(project.latitude && project.longitude
+        ? { geo: { '@type': 'GeoCoordinates', latitude: project.latitude, longitude: project.longitude } }
+        : {}),
+      amenityFeature: (project.amenities ?? []).map((a: string) => ({
+        '@type': 'LocationFeatureSpecification', name: a, value: true,
+      })),
+    },
+    {
+      '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: process.env.NEXT_PUBLIC_SITE_URL },
+        { '@type': 'ListItem', position: 2, name: project.city, item: `${process.env.NEXT_PUBLIC_SITE_URL}/${city}` },
+        { '@type': 'ListItem', position: 3, name: project.name, item: url },
+      ],
+    },
+    {
+      '@context': 'https://schema.org', '@type': 'FAQPage',
+      mainEntity: [
+        { '@type': 'Question', name: `What is the price of plots in ${project.name}?`,
+          acceptedAnswer: { '@type': 'Answer',
+            text: `${project.price_display ?? `From ₹${project.price_per_sqyd}/sq.yd`}. Plot sizes from ${project.plot_size_min} sq.yards. Bank loans available.` } },
+        { '@type': 'Question', name: `Is ${project.name} RERA approved?`,
+          acceptedAnswer: { '@type': 'Answer',
+            text: `Yes, ${project.name} is RERA and DTCP approved. Contact GEM Group for registration details.` } },
+        { '@type': 'Question', name: `Where is ${project.name} located?`,
+          acceptedAnswer: { '@type': 'Answer',
+            text: `${project.address ?? project.city}, ${project.state}. ${(project.nearby ?? []).slice(0, 3).join(', ')}.` } },
+      ],
+    },
+  ]
 }
 
-// ── Page ─────────────────────────────────────────────────────
-export default async function CityPage({
+export default async function ProjectPage({
   params,
 }: {
-  params: Promise<{ city: string }>
+  params: Promise<{ city: string; slug: string }>
 }) {
-  const { city } = await params
-  const projects  = await getCityProjects(city)
+  const { city, slug } = await params
+  const project = await getProjectByCityAndSlug(city, slug)
+  if (!project) notFound()
 
-  if (projects.length === 0) notFound()
-
-  const cityName = projects[0].city
-
-  // ItemList schema — makes Google show each project
-  // as a sitelink under the city search result
-  const itemListSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: `Real Estate Projects in ${cityName}`,
-    numberOfItems: projects.length,
-    itemListElement: projects.map((p, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: p.name,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${p.city_slug}/${p.slug}`,
-      image: p.cover_image_url ?? undefined,
-    })),
-  }
-
-  // BreadcrumbList schema
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home',   item: process.env.NEXT_PUBLIC_SITE_URL },
-      { '@type': 'ListItem', position: 2, name: cityName, item: `${process.env.NEXT_PUBLIC_SITE_URL}/${city}` },
-    ],
-  }
+  const schemas  = buildSchemas(project, city, slug)
+  const heroImage = project.cover_image_url ?? project.project_media?.[0]?.url ?? null
+  const phone    = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '918008461987'
+  const waMsg    = encodeURIComponent(
+    `Hi GEM Group! I am interested in ${project.name} in ${project.city}. Please share details.`
+  )
 
   return (
     <>
-      {/* JSON-LD schemas */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+      {schemas.map((s, i) => (
+        <script key={i} type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+      ))}
 
-      <div className="max-w-7xl mx-auto px-4 py-10">
+      {/* ── HERO ── */}
+      <div className="relative w-full h-[60vh] min-h-[380px] bg-gray-900">
+        {heroImage ? (
+          <Image
+            src={heroImage}
+            alt={project.name}
+            fill
+            className="object-cover opacity-75"
+            priority
+            fetchPriority="high"
+            sizes="100vw"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-wrap gap-2 mb-3">
+              {(project.amenities ?? []).includes('RERA Approved') && (
+                <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">✓ RERA</span>
+              )}
+              {(project.amenities ?? []).includes('DTCP Approved') && (
+                <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">✓ DTCP</span>
+              )}
+              {project.featured && (
+                <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">⭐ Featured</span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg tracking-tight">{project.name}</h1>
+            <p className="text-gray-200 mt-1">📍 {project.address ?? project.city}, {project.state}</p>
+            {project.price_display && (
+              <p className="text-yellow-300 font-bold text-xl mt-2">{project.price_display}</p>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 mb-6 flex items-center gap-2">
-          <a href="/" className="hover:text-blue-700">Home</a>
+      {/* ── STICKY STATS BAR ── */}
+      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 py-3">
+            <div className="flex flex-wrap gap-6">
+              {project.plot_size_min && (
+                <div className="text-center">
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Unit Size</p>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {project.plot_size_min}
+                    {project.plot_size_max && project.plot_size_max !== project.plot_size_min
+                      ? `–${project.plot_size_max}` : ''} Sq.Yds
+                  </p>
+                </div>
+              )}
+              {project.total_area && (
+                <div className="text-center">
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Total Area</p>
+                  <p className="text-sm font-semibold text-gray-800">{project.total_area} Acres</p>
+                </div>
+              )}
+              {project.total_plots && (
+                <div className="text-center">
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Total Plots</p>
+                  <p className="text-sm font-semibold text-gray-800">{project.total_plots}</p>
+                </div>
+              )}
+              <div className="text-center">
+                <p className="text-xs text-gray-600 uppercase tracking-wide">Price</p>
+                <p className="text-sm font-semibold text-blue-700">
+                  {project.price_display ?? (project.price_per_sqyd
+                    ? `₹${project.price_per_sqyd.toLocaleString('en-IN')}/sq.yd` : 'On Request')}
+                </p>
+              </div>
+            </div>
+            <a href="#booking-form"
+              className="hidden rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 md:block">
+              Book Site Visit
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT ── */}
+      <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-gray-700">
+          <a href="/" className="font-medium hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">Home</a>
           <span>/</span>
-          <span className="text-gray-900 font-medium">{cityName}</span>
+          <a href={`/${city}`} className="font-medium capitalize hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">{project.city}</a>
+          <span>/</span>
+          <span className="font-semibold text-gray-900">{project.name}</span>
         </nav>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Projects in {cityName}
-          </h1>
-          <p className="text-gray-500 mt-1">
-            {projects.length} project{projects.length !== 1 ? 's' : ''} available
-          </p>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* Project Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
+          {/* Left: Overview (server rendered) + deferred interactive tabs */}
+          <div className="lg:col-span-2">
+            <section id="project-overview" className="space-y-8">
+              {project.description && (
+                <div>
+                  <h2 className="mb-3 text-xl font-extrabold text-gray-900">About {project.name}</h2>
+                  <p className="whitespace-pre-line leading-relaxed text-gray-700">{project.description}</p>
+                </div>
+              )}
 
+              <div>
+                <h2 className="mb-4 text-xl font-extrabold text-gray-900">Project Highlights</h2>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  {[
+                    { icon: '🏙️', label: 'City', value: project.city },
+                    { icon: '📐', label: 'Plot Size', value: project.plot_size_min ? `${project.plot_size_min}+ sq.yd` : null },
+                    { icon: '🌍', label: 'Total Area', value: project.total_area ? `${project.total_area} Acres` : null },
+                    { icon: '🏠', label: 'Total Plots', value: project.total_plots?.toString() ?? null },
+                  ]
+                    .filter((s) => s.value)
+                    .map(({ icon, label, value }) => (
+                      <div key={label} className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-center">
+                        <p className="mb-1 text-2xl">{icon}</p>
+                        <p className="text-xs uppercase tracking-wide text-gray-700">{label}</p>
+                        <p className="mt-1 text-sm font-extrabold text-gray-900">{value}</p>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {(project.nearby ?? []).length > 0 && (
+                <div>
+                  <h2 className="mb-4 text-xl font-extrabold text-gray-900">Location Advantages</h2>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {(project.nearby ?? []).map((n: string) => (
+                      <div key={n} className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
+                        <span className="mt-0.5 text-green-600">📍</span>
+                        <span className="text-sm text-gray-800">{n}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <ProjectTabs project={project} />
+          </div>
+
+          {/* Right: Sticky Booking Form */}
+          <div className="lg:col-span-1">
+            <div id="booking-form" className="sticky top-20 space-y-4">
+              <DeferredBookingForm
+                projectId={project.id}
+                projectName={project.name}
+              />
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <p className="text-xs text-gray-700 font-semibold uppercase tracking-wide mb-2">Why GEM Group?</p>
+                {['✓ RERA & DTCP Approved', '✓ Bank Loans Available', '✓ Spot Registration', '✓ Free Site Visit', '✓ 10+ Years Trust'].map((t) => (
+                  <p key={t} className="text-sm text-gray-700">{t}</p>
+                ))}
+              </div>
+              <a href={`tel:+${phone}`}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2">
+                📞 Call: +91 80084 61987
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* ── FIXED BOTTOM BAR — mobile only ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden border-t border-gray-200 bg-white shadow-2xl">
+        <a href={`tel:+${phone}`}
+          className="flex flex-1 items-center justify-center gap-2 bg-blue-700 py-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">
+          📞 Call Now
+        </a>
+        <a href={`https://wa.me/${phone}?text=${waMsg}`}
+          target="_blank" rel="noopener noreferrer"
+          className="flex flex-1 items-center justify-center gap-2 bg-[#25D366] py-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2">
+          💬 WhatsApp
+        </a>
       </div>
-      
+
+      {/* ── FLOATING WHATSAPP — desktop only ── */}
+      <DeferredWhatsAppButton
+        projectName={project.name}
+        city={project.city}
+        priceDisplay={project.price_display}
+      />
     </>
   )
 }

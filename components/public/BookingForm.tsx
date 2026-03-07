@@ -14,6 +14,7 @@ interface FormData {
 interface Props {
   projectId: string
   projectName: string
+  citySlug?: string
 }
 
 export default function BookingForm({ projectId, projectName }: Props) {
@@ -96,20 +97,26 @@ export default function BookingForm({ projectId, projectName }: Props) {
 
       {/* Name */}
       <div>
+        <label htmlFor="lead-name" className="sr-only">Your Name</label>
         <input
+          id="lead-name"
           type="text"
           placeholder="Your Name"
           {...register('name', { required: 'Name is required' })}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+          aria-invalid={errors.name ? 'true' : 'false'}
+          aria-describedby={errors.name ? 'lead-name-error' : undefined}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-600 focus:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
         />
         {errors.name && (
-          <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+          <p id="lead-name-error" className="mt-1 text-xs text-red-600">{errors.name.message}</p>
         )}
       </div>
 
       {/* Phone */}
       <div>
+        <label htmlFor="lead-phone" className="sr-only">Phone Number</label>
         <input
+          id="lead-phone"
           type="tel"
           placeholder="Phone Number"
           {...register('phone', {
@@ -119,17 +126,21 @@ export default function BookingForm({ projectId, projectName }: Props) {
               message: 'Enter a valid 10-digit Indian mobile number',
             },
           })}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+          aria-invalid={errors.phone ? 'true' : 'false'}
+          aria-describedby={errors.phone ? 'lead-phone-error' : undefined}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-600 focus:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
         />
         {errors.phone && (
-          <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+          <p id="lead-phone-error" className="mt-1 text-xs text-red-600">{errors.phone.message}</p>
         )}
       </div>
 
       {/* Preferred Time */}
+      <label htmlFor="lead-preferred-time" className="sr-only">Preferred Visit Time</label>
       <select
+        id="lead-preferred-time"
         {...register('preferred_time')}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-600 focus:outline-none focus:border-blue-500"
+        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-800 focus:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
       >
         <option value="">Preferred Visit Time (optional)</option>
         <option value="Weekday Morning (9am–12pm)">Weekday Morning (9am–12pm)</option>
@@ -140,17 +151,17 @@ export default function BookingForm({ projectId, projectName }: Props) {
         <option value="Any Time">Any Time</option>
       </select>
 
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition text-sm"
+        className="w-full rounded-lg bg-blue-700 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 disabled:bg-blue-400"
       >
         {loading ? 'Submitting...' : 'Book Free Site Visit'}
       </button>
 
-      <p className="text-gray-400 text-xs text-center">
+      <p className="text-center text-xs text-gray-700">
         No spam. We only call to confirm your visit.
       </p>
     </form>

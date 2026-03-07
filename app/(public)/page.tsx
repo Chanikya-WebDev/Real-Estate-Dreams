@@ -67,10 +67,10 @@ export default async function HomePage() {
       {/* ── HERO SECTION ─────────────────────────── */}
       <section className="bg-gradient-to-br from-blue-900 to-blue-700 text-white py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight">
             Find Your Perfect Plot or Villa
           </h1>
-          <p className="mt-4 text-blue-100 text-lg">
+          <p className="mt-4 text-blue-50 text-lg font-medium">
             Premium projects across Hyderabad, Vizag, Vijayawada &amp; Bangalore
           </p>
           <Link
@@ -84,7 +84,7 @@ export default async function HomePage() {
 
       {/* ── CITY QUICK LINKS ─────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Browse by City</h2>
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Browse by City</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {CITIES.map((city) => (
             <Link
@@ -102,7 +102,7 @@ export default async function HomePage() {
       {/* ── FEATURED PROJECTS ────────────────────── */}
       {featuredProjects.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 pb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Projects</h2>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Featured Projects</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredProjects.map((project) => (
               <ProjectCard key={project.id} project={project} />
@@ -114,7 +114,7 @@ export default async function HomePage() {
       {/* ── LATEST PROJECTS ──────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 pb-16">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Latest Projects</h2>
+          <h2 className="text-2xl font-extrabold text-gray-900">Latest Projects</h2>
           <Link href="/search" className="text-blue-700 text-sm font-medium hover:underline">
             View all →
           </Link>

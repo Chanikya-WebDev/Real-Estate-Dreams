@@ -38,10 +38,10 @@ export default function RootLayout({
 
         {/* Google Analytics — loads after page is interactive */}
         {/* Replace G-XXXXXXXXXX with your GA4 Measurement ID */}
-        <script
+        {/* <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
-        />
+        /> */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

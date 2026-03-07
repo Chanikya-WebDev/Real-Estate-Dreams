@@ -140,7 +140,7 @@ export default async function ProjectPage({
               <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">⭐ Featured</span>
             )}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">{project.name}</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg tracking-tight">{project.name}</h1>
           <p className="text-gray-200 mt-1 flex items-center gap-1">
             <span>📍</span>
             <span>{project.address ?? project.city}, {project.state}</span>
@@ -157,13 +157,13 @@ export default async function ProjectPage({
             <div className="flex flex-wrap gap-6">
               {project.address && (
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Location</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Location</p>
                   <p className="text-sm font-semibold text-gray-800">{project.city}</p>
                 </div>
               )}
               {project.plot_size_min && (
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Unit Size</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Unit Size</p>
                   <p className="text-sm font-semibold text-gray-800">
                     {project.plot_size_min}
                     {project.plot_size_max && project.plot_size_max !== project.plot_size_min
@@ -173,18 +173,18 @@ export default async function ProjectPage({
               )}
               {project.total_area && (
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Total Area</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Total Area</p>
                   <p className="text-sm font-semibold text-gray-800">{project.total_area} Acres</p>
                 </div>
               )}
               {project.total_plots && (
                 <div className="text-center">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Total Plots</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide">Total Plots</p>
                   <p className="text-sm font-semibold text-gray-800">{project.total_plots}</p>
                 </div>
               )}
               <div className="text-center">
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Price</p>
+                <p className="text-xs text-gray-600 uppercase tracking-wide">Price</p>
                 <p className="text-sm font-semibold text-blue-700">
                   {project.price_display ?? (project.price_per_sqyd ? `₹${project.price_per_sqyd.toLocaleString('en-IN')}/sq.yd` : 'On Request')}
                 </p>
@@ -194,7 +194,7 @@ export default async function ProjectPage({
             {/* CTA in stats bar */}
             <a
               href="#booking-form"
-              className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold px-5 py-2 rounded-lg transition hidden md:block"
+              className="hidden rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 md:block"
             >
               Book Site Visit
             </a>
@@ -206,12 +206,12 @@ export default async function ProjectPage({
       <div className="max-w-7xl mx-auto px-4 py-8">
 
         {/* Breadcrumb */}
-        <nav className="text-sm text-gray-400 mb-6 flex items-center gap-2">
-          <a href="/" className="hover:text-blue-600">Home</a>
+        <nav className="mb-6 flex items-center gap-2 text-sm text-gray-700">
+          <a href="/" className="font-medium hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">Home</a>
           <span>/</span>
-          <a href={`/${city}`} className="hover:text-blue-600 capitalize">{project.city}</a>
+          <a href={`/${city}`} className="font-medium capitalize hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">{project.city}</a>
           <span>/</span>
-          <span className="text-gray-700">{project.name}</span>
+          <span className="font-semibold text-gray-900">{project.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -235,7 +235,7 @@ export default async function ProjectPage({
 
               {/* Trust badges below form */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Why GEM Group?</p>
+                <p className="text-xs text-gray-700 font-semibold uppercase tracking-wide mb-2">Why GEM Group?</p>
                 {[
                   '✓ RERA & DTCP Approved Projects',
                   '✓ Bank Loans Available',
@@ -243,14 +243,14 @@ export default async function ProjectPage({
                   '✓ 10+ Years of Trust',
                   '✓ Free Site Visit',
                 ].map((t) => (
-                  <p key={t} className="text-sm text-gray-600">{t}</p>
+                  <p key={t} className="text-sm text-gray-700">{t}</p>
                 ))}
               </div>
 
               {/* Phone CTA */}
               <a
                 href={`tel:+${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '918008461987'}`}
-                className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition text-sm"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2"
               >
                 📞 Call Now: +91 80084 61987
               </a>

@@ -54,13 +54,13 @@ export default async function SearchPage({
   const projects = await getProjects(filters)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto px-4 py-8 md:py-10">
 
       {/* Header */}
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">All Projects</h1>
+      <h1 className="mb-6 text-3xl font-extrabold tracking-tight text-gray-900">All Projects</h1>
 
       {/* Filters */}
-      <form method="GET" className="flex flex-wrap gap-3 mb-8">
+      <form method="GET" className="mb-8 flex flex-wrap gap-3">
 
         {/* Search Input */}
         <input
@@ -68,14 +68,14 @@ export default async function SearchPage({
           name="q"
           defaultValue={filters.q ?? ''}
           placeholder="Search by name or location..."
-          className="border border-gray-300 rounded-lg px-4 py-2 text-sm flex-1 min-w-48 focus:outline-none focus:border-blue-500"
+          className="min-w-48 flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder:text-gray-600 focus:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
         />
 
         {/* City Filter */}
         <select
           name="city"
           defaultValue={filters.city ?? ''}
-          className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-900 focus:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 sm:w-auto"
         >
           <option value="">All Cities</option>
           {CITIES.map((city) => (
@@ -89,7 +89,7 @@ export default async function SearchPage({
         <select
           name="type"
           defaultValue={filters.type ?? ''}
-          className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-900 focus:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 sm:w-auto"
         >
           <option value="">All Types</option>
           {TYPES.map((type) => (
@@ -101,7 +101,7 @@ export default async function SearchPage({
 
         <button
           type="submit"
-          className="bg-blue-700 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-800 transition"
+          className="w-full rounded-lg bg-blue-700 px-6 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 sm:w-auto"
         >
           Search
         </button>
@@ -110,7 +110,7 @@ export default async function SearchPage({
         {(filters.city || filters.type || filters.q) && (
           <a
             href="/search"
-            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition"
+            className="w-full rounded-lg bg-gray-100 px-4 py-2 text-center text-sm font-semibold text-gray-800 transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 sm:w-auto"
           >
             Clear
           </a>
@@ -118,7 +118,7 @@ export default async function SearchPage({
       </form>
 
       {/* Results Count */}
-      <p className="text-gray-500 text-sm mb-5">
+      <p className="mb-5 text-sm font-medium text-gray-700">
         {projects.length} project{projects.length !== 1 ? 's' : ''} found
         {filters.city && ` in ${filters.city}`}
         {filters.type && ` · ${filters.type}s`}
@@ -127,10 +127,10 @@ export default async function SearchPage({
 
       {/* Results Grid */}
       {projects.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
+        <div className="py-16 text-center text-gray-600">
           <p className="text-4xl mb-3">🔍</p>
-          <p className="text-lg font-medium text-gray-600">No projects found</p>
-          <p className="text-sm mt-1">Try different filters or clear the search</p>
+          <p className="text-lg font-semibold text-gray-800">No projects found</p>
+          <p className="mt-1 text-sm text-gray-700">Try different filters or clear the search</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
