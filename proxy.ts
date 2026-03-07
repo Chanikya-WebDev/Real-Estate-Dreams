@@ -8,7 +8,17 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request })
+  const { pathname } = request.nextUrl
+
+  // ── KEY FIX ─────────────────────────────────────────────
+  // Forward pathname as request header so (admin)/layout.tsx
+  // can read it via headers() and skip auth for /admin/login
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+ 
+    let response = NextResponse.next({
+    request: { headers: requestHeaders },  
+  })
 
   // Create Supabase client that reads/writes edge cookies
   const supabase = createServerClient(
@@ -25,10 +35,9 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
+          response = NextResponse.next({
+            request: { headers: requestHeaders }, 
+          })
         },
       },
     }
@@ -39,7 +48,7 @@ export async function proxy(request: NextRequest) {
   // getUser() validates with Supabase Auth server (safe)
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  // const { pathname } = request.nextUrl
   const isAdminRoute = pathname.startsWith('/admin')
   const isLoginPage = pathname === '/admin/login'
 

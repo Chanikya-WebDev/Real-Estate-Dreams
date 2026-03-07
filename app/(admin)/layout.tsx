@@ -1,5 +1,5 @@
-// app/(admin)/layout.tsx — SIMPLIFIED
-// proxy.ts handles the redirect, layout just adds the sidebar
+// app/(admin)/layout.tsx
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/admin/Sidebar'
@@ -9,8 +9,18 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Keep this as safety net ONLY for dashboard/projects/leads
-  // Login page no longer reaches this layout
+  // Read pathname forwarded by proxy.ts
+  const headersList = await headers()
+  const pathname = headersList.get('x-pathname') ?? ''
+
+  // ── Login page: no Sidebar, no auth redirect ───────────
+  // Without this check: layout sees !user → redirect('/admin/login')
+  // → layout runs again → infinite 307 loop
+  if (pathname === '/admin/login') {
+    return <>{children}</>
+  }
+
+  // ── All other admin pages: verify session ──────────────
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

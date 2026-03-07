@@ -66,7 +66,8 @@ export default function MediaUploader({ media, onChange }: Props) {
           clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov'],
           maxFileSize: 50000000,                    // 50MB limit per file
           folder: 'real-estate',
-          sources: ['local', 'camera'],             // only local + camera (no unsplash/google photos)
+          sources: ['local'],    
+          maxChunkSize: 6000000,         // only local + camera (no unsplash/google photos)
         }}
         onSuccess={handleUploadSuccess}
       >
