@@ -76,6 +76,7 @@ export async function generateMetadata({
     city: p.city,
     citySlug: p.city_slug,
   })
+  const ogImage = p.cover_image_url ?? p.project_media?.find((media) => media.media_type === 'image')?.url ?? null
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const canonical = `${siteUrl}/${canonicalCity}/${slug}`
 
@@ -83,12 +84,12 @@ export async function generateMetadata({
     title, description, keywords,
     openGraph: {
       title, description, url: canonical, siteName: 'GEM Group Realty',
-      images: p.cover_image_url
-        ? [{ url: p.cover_image_url, width: 1200, height: 630, alt: p.name }] : [],
+      images: ogImage
+        ? [{ url: ogImage, width: 1200, height: 630, alt: p.name }] : [],
       locale: 'en_IN', type: 'website',
     },
     twitter: { card: 'summary_large_image', title, description,
-      images: p.cover_image_url ? [p.cover_image_url] : [] },
+      images: ogImage ? [ogImage] : [] },
     alternates: { canonical },
     robots: { index: true, follow: true },
   }
@@ -202,7 +203,7 @@ export default async function ProjectPage({
       ))}
 
       {/* ── HERO ── */}
-      <div className="relative mx-auto w-full max-w-[1280px] h-[52vh] min-h-[320px] bg-gray-900 md:h-[60vh] md:min-h-[380px]">
+      <div className="relative mx-auto w-full max-w-[1280px] h-[52vh] min-h-[320px] overflow-hidden bg-gray-900 md:h-[60vh] md:min-h-[380px]">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/90 to-cyan-900/70" />
         <div className="pointer-events-none absolute -left-24 top-8 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl" />
         <div className="pointer-events-none absolute -right-28 bottom-8 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
@@ -325,7 +326,6 @@ export default async function ProjectPage({
       </main>
       {/* ── FLOATING ACTIONS — always visible ── */}
       <FloatingActionButtons
-        projectId={project.id}
         projectName={project.name}
         city={project.city}
         priceDisplay={project.price_display}

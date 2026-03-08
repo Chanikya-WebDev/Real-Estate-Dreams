@@ -1,89 +1,42 @@
-'use client'
-
-import dynamic from 'next/dynamic'
-import { useMemo, useState } from 'react'
-
-const BookingForm = dynamic(() => import('@/components/public/BookingForm'), {
-  ssr: false,
-  loading: () => <div className="h-96 w-full animate-pulse rounded-2xl border border-gray-200 bg-white" />,
-})
-
 interface Props {
-  projectId: string
   projectName: string
   city: string
   priceDisplay: string | null
 }
 
-export default function FloatingActionButtons({ projectId, projectName, city, priceDisplay }: Props) {
-  const [open, setOpen] = useState(false)
+export default function FloatingActionButtons({ projectName, city, priceDisplay }: Props) {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '918008461987'
-
-  const waMessage = useMemo(() => {
-    return encodeURIComponent(
-      `Hi GEM Group! I am interested in ${projectName} in ${city}. ` +
-      `Price: ${priceDisplay ?? 'Please share pricing details'}. Please share details and book a site visit.`
-    )
-  }, [projectName, city, priceDisplay])
+  const waMessage = encodeURIComponent(
+    `Hi GEM Group! I am interested in ${projectName} in ${city}. ` +
+    `Price: ${priceDisplay ?? 'Please share pricing details'}. Please share details and book a site visit.`
+  )
 
   return (
-    <>
-      <div className="fixed bottom-5 right-4 z-50 flex flex-col gap-3 md:bottom-6 md:right-6">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg transition hover:scale-105 hover:bg-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2 md:h-14 md:w-14"
-          aria-label="Book site visit"
-          title="Book Site Visit"
-        >
-          🗓️
-        </button>
-
-        <a
-          href={`tel:+${phone}`}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-700 text-white shadow-lg transition hover:scale-105 hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 md:h-14 md:w-14"
-          aria-label="Call now"
-          title="Call"
-        >
-          📞
-        </a>
-
-        <a
-          href={`https://wa.me/${phone}?text=${waMessage}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:scale-105 hover:bg-[#20ba5a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 md:h-14 md:w-14"
-          aria-label="WhatsApp chat"
-          title="WhatsApp"
-        >
-          💬
-        </a>
-      </div>
-
-      <div
-        className={`fixed inset-0 z-[70] bg-black/35 transition-opacity ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
-        onClick={() => setOpen(false)}
-        aria-hidden
-      />
-
-      <aside
-        className={`fixed bottom-0 left-0 right-0 z-[71] max-h-[88vh] rounded-t-2xl bg-white p-4 shadow-2xl transition-transform duration-300 md:left-auto md:right-6 md:bottom-6 md:w-[380px] md:rounded-2xl ${
-          open ? 'translate-y-0' : 'translate-y-full md:translate-y-[120%]'
-        }`}
-        aria-label="Book Site Visit Panel"
+    <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-3 md:bottom-6 md:right-6">
+      <a
+        href={`tel:+${phone}`}
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-700 text-white shadow-lg transition hover:scale-105 hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 md:h-14 md:w-14"
+        aria-label="Call now"
+        title="Call"
       >
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-900">Book Free Site Visit</h3>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="rounded-md px-2 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-100"
-          >
-            Close
-          </button>
-        </div>
-        {open ? <BookingForm projectId={projectId} projectName={projectName} /> : null}
-      </aside>
-    </>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6 md:h-7 md:w-7">
+          <path d="M6.62 10.79a15.46 15.46 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.32.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 4a1 1 0 0 1 1-1h3.49a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.24 1.02z" />
+        </svg>
+      </a>
+
+      <a
+        href={`https://wa.me/${phone}?text=${waMessage}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:scale-105 hover:bg-[#20ba5a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 md:h-14 md:w-14"
+        aria-label="WhatsApp chat"
+        title="WhatsApp"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="white" className="h-7 w-7 md:h-8 md:w-8">
+          <path d="M16.003 2.667C8.636 2.667 2.667 8.636 2.667 16c0 2.338.635 4.626 1.839 6.627L2.667 29.333l6.917-1.81A13.27 13.27 0 0 0 16.003 29.333C23.37 29.333 29.333 23.364 29.333 16S23.37 2.667 16.003 2.667zm0 2.4c5.88 0 10.664 4.784 10.664 10.664 0 5.88-4.784 10.664-10.664 10.664a10.62 10.62 0 0 1-5.434-1.492l-.39-.237-4.104 1.074 1.097-4.003-.258-.407A10.62 10.62 0 0 1 5.34 16c0-5.88 4.783-10.664 10.663-10.664zm-3.03 5.197c-.22 0-.575.082-.877.41-.301.328-1.15 1.124-1.15 2.74s1.178 3.18 1.342 3.4c.165.218 2.31 3.527 5.603 4.806 2.77 1.093 3.333.875 3.934.821.601-.055 1.94-.793 2.213-1.558.274-.766.274-1.422.192-1.558-.082-.136-.3-.218-.63-.382s-1.94-.957-2.24-1.066c-.3-.11-.52-.164-.74.163-.22.328-.85 1.066-.986 1.285-.136.218-.273.245-.602.082-.329-.164-1.389-.512-2.647-1.634-.978-.873-1.638-1.95-1.83-2.279-.191-.328-.02-.506.144-.669.148-.148.329-.382.493-.574.164-.191.219-.328.328-.546.11-.218.055-.41-.027-.574-.082-.163-.73-1.776-1.011-2.432-.259-.62-.524-.537-.74-.547a13.37 13.37 0 0 0-.63-.013z" />
+        </svg>
+        <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-20 animate-ping" aria-hidden />
+      </a>
+    </div>
   )
 }
