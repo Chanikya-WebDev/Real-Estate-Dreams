@@ -6,6 +6,7 @@
 // → Root HTML structure
 // → Global font
 // ─────────────────────────────────────────────────────
+import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -24,6 +25,9 @@ export const metadata: Metadata = {
   description: 'Explore DTCP approved plots, villas and townships across Hyderabad, Bangalore, Vijayawada and Vizag.',
   // Prevents Google indexing your Vercel preview URLs
   // Only your main vercel.app domain gets indexed
+    verification: {
+    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
+  },
   metadataBase: new URL(siteUrl),
 }
 
@@ -32,27 +36,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID
   return (
     <html lang="en">
       <body className={inter.className}>
         {children}
-
-        {/* Google Analytics — loads after page is interactive */}
-        {/* Replace G-XXXXXXXXXX with your GA4 Measurement ID */}
-        {/* <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
-        /> */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-XXXXXXXXXX');
-            `,
-          }}
-        />
+        { gaId ? <GoogleAnalytics gaId={gaId} /> : null}
       </body>
     </html>
   )
