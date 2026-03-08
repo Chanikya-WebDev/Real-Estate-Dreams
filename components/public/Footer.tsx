@@ -5,7 +5,9 @@ export default function Footer() {
     <footer className="mt-16 border-t border-blue-100 bg-gradient-to-r from-blue-900 to-indigo-900 py-10 text-blue-100">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 md:grid-cols-3">
         <div>
-          <h3 className="mb-3 text-lg font-extrabold text-white">YourBrand Realty</h3>
+          <h3 className="mb-3 text-lg font-extrabold text-white">
+            DreamPlots <span className="text-blue-200">Realty</span>
+          </h3>
           <p className="text-sm leading-relaxed text-blue-100">Trusted real estate partner for plots and villas across Telangana and Andhra Pradesh.</p>
         </div>
 
@@ -21,13 +23,13 @@ export default function Footer() {
 
         <div>
           <h3 className="mb-3 font-semibold text-white">Contact</h3>
-          <p className="text-sm">📞 +91-98765-43210</p>
-          <p className="mt-1 text-sm">📧 info@yourbrand.com</p>
+          <p className="text-sm">📞 +91 80084 61987</p>
+          <p className="mt-1 text-sm">📧 golesuresh832@gmail.com</p>
         </div>
       </div>
 
       <div className="mt-8 text-center text-xs text-blue-200/80">
-        © {new Date().getFullYear()} YourBrand Realty. All rights reserved.
+        © {new Date().getFullYear()} DreamPlots Realty. All rights reserved.
       </div>
     </footer>
   )

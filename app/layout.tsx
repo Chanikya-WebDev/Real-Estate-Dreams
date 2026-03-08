@@ -17,9 +17,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 export const metadata: Metadata = {
   title: {
     // %s = page-specific title injected by generateMetadata()
-    // Result: "Sree Laxmi Balaji Township | YourBrand Realty"
-    template: '%s | YourBrand Realty',
-    default: 'YourBrand Realty — Plots & Villas in Hyderabad, Vizag, Vijayawada',
+    // Result: "Sree Laxmi Balaji Township | DreamPlots"
+    template: '%s | DreamPlots',
+    default: 'DreamPlots — Plots & Villas in Hyderabad, Vizag, Vijayawada',
   },
   description: 'Explore DTCP approved plots, villas and townships across Hyderabad, Bangalore, Vijayawada and Vizag.',
   // Prevents Google indexing your Vercel preview URLs

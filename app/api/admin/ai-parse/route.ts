@@ -84,7 +84,7 @@ Amenities include ${amenities.length > 0 ? amenities.slice(0, 6).join(', ') : 'e
 This project is positioned for long-term value with current market demand in ${city}. Book a site visit to compare unit sizes, pricing and location benefits.`
 
   const seoTitle = `${name} in ${city} | Plots & Villas`
-  const seoDescription = `Explore ${name} in ${city}. Get latest price, plot sizes, amenities and free site visit details from GEM Group Realty.`
+  const seoDescription = `Explore ${name} in ${city}. Get latest price, plot sizes, amenities and free site visit details from DreamPlots.`
   const priceDisplay = pricePerSqyd ? `₹${pricePerSqyd.toLocaleString('en-IN')}/sq.yd onwards` : null
 
   const parsed: Record<string, any> = {
@@ -215,7 +215,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 })
   }
 
-  const systemPrompt = `You are a real estate data extractor for an Indian property website called GEM Group Realty (Telangana & Andhra Pradesh).
+  const systemPrompt = `You are a real estate data extractor for an Indian property website called DreamPlots (Telangana & Andhra Pradesh).
 
 Extract all available data from the raw text provided. Return ONLY a single valid raw JSON object (no markdown, no explanation, no extra text).
 

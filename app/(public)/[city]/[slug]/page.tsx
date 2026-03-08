@@ -57,7 +57,7 @@ export async function generateMetadata({
   const description = pickNonEmpty(
     p.seo_description,
     fallbackDescription,
-    `${p.name} premium plots in ${p.city}. Contact GEM Group Realty for pricing and site visit details.`,
+    `${p.name} premium plots in ${p.city}. Contact DreamPlots for pricing and site visit details.`,
   )
   const keywords = (p.seo_keywords && p.seo_keywords.length > 0)
     ? p.seo_keywords
@@ -83,7 +83,7 @@ export async function generateMetadata({
   return {
     title, description, keywords,
     openGraph: {
-      title, description, url: canonical, siteName: 'GEM Group Realty',
+      title, description, url: canonical, siteName: 'DreamPlots',
       images: ogImage
         ? [{ url: ogImage, width: 1200, height: 630, alt: p.name }] : [],
       locale: 'en_IN', type: 'website',
@@ -159,7 +159,7 @@ function buildSchemas(project: ProjectWithMedia, city: string, slug: string) {
             text: `${project.price_display ?? `From ₹${project.price_per_sqyd}/sq.yd`}. Plot sizes from ${project.plot_size_min} sq.yards. Bank loans available.` } },
         { '@type': 'Question', name: `Is ${project.name} RERA approved?`,
           acceptedAnswer: { '@type': 'Answer',
-            text: `Yes, ${project.name} is RERA and DTCP approved. Contact GEM Group for registration details.` } },
+            text: `Yes, ${project.name} is RERA and DTCP approved. Contact DreamPlots for registration details.` } },
         { '@type': 'Question', name: `Where is ${project.name} located?`,
           acceptedAnswer: { '@type': 'Answer',
             text: `${project.address ?? project.city}, ${project.state}. ${(project.nearby ?? []).slice(0, 3).join(', ')}.` } },
@@ -185,6 +185,20 @@ export default async function ProjectPage({
     redirect(`/${canonicalCity}/${slug}`)
   }
   const cityLabel = getListingCityLabel(city)
+  const relatedSearchTerms = (
+    project.seo_keywords && project.seo_keywords.length > 0
+      ? project.seo_keywords
+      : generateSeoKeywords({
+          name: project.name,
+          city: project.city,
+          state: project.state,
+          projectType: project.project_type,
+          priceDisplay: project.price_display,
+          pricePerSqyd: project.price_per_sqyd,
+          amenities: project.amenities ?? [],
+          nearby: project.nearby ?? [],
+        })
+  ).slice(0, 6)
 
   const schemas  = buildSchemas(project, city, slug)
   const heroImage = project.cover_image_url ?? project.project_media?.[0]?.url ?? null
@@ -246,6 +260,24 @@ export default async function ProjectPage({
           </div>
         </div>
       </div>
+
+      {relatedSearchTerms.length > 0 && (
+        <section className="mx-auto w-full max-w-[1280px] border-b border-gray-200 bg-white px-4 py-4 md:px-6" aria-label="Popular searches related to this project">
+          <div className="mx-auto max-w-7xl">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Popular Searches</p>
+            <div className="flex flex-wrap gap-2">
+              {relatedSearchTerms.map((term) => (
+                <span
+                  key={term}
+                  className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800"
+                >
+                  {term}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── STICKY STATS BAR ── */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">

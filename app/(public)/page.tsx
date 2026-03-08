@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Plots & Villas in Hyderabad, Vizag, Vijayawada, Bangalore',
   description: 'Browse premium plots and villa projects across Hyderabad, Vizag, Vijayawada and Bangalore. Book a free site visit today.',
   openGraph: {
-    title: 'YourBrand Realty — Premium Plots & Villas',
+    title: 'DreamPlots — Premium Plots & Villas',
     description: 'Browse projects across Hyderabad, Vizag, Vijayawada and Bangalore.',
     type: 'website',
   },
