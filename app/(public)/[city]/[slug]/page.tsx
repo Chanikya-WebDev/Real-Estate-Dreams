@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { cache } from 'react'
 import type { Metadata } from 'next'
 import type { ProjectWithMedia } from '@/types'
+import { generateSeoKeywords } from '@/lib/seo-keywords'
 import ProjectTabs from '@/components/public/ProjectTabs'
 import DeferredBookingForm from '@/components/public/DeferredBookingForm'
 import DeferredWhatsAppButton from '@/components/public/DeferredWhatsAppButton'
@@ -62,10 +63,22 @@ export async function generateMetadata({
     fallbackDescription,
     `${p.name} premium plots in ${p.city}. Contact GEM Group Realty for pricing and site visit details.`,
   )
+  const keywords = (p.seo_keywords && p.seo_keywords.length > 0)
+    ? p.seo_keywords
+    : generateSeoKeywords({
+        name: p.name,
+        city: p.city,
+        state: p.state,
+        projectType: p.project_type,
+        priceDisplay: p.price_display,
+        pricePerSqyd: p.price_per_sqyd,
+        amenities: p.amenities ?? [],
+        nearby: p.nearby ?? [],
+      })
   const canonical = `${process.env.NEXT_PUBLIC_SITE_URL}/${city}/${slug}`
 
   return {
-    title, description,
+    title, description, keywords,
     openGraph: {
       title, description, url: canonical, siteName: 'GEM Group Realty',
       images: p.cover_image_url
@@ -136,10 +149,6 @@ export default async function ProjectPage({
 
   const schemas  = buildSchemas(project, city, slug)
   const heroImage = project.cover_image_url ?? project.project_media?.[0]?.url ?? null
-  const phone    = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '918008461987'
-  const waMsg    = encodeURIComponent(
-    `Hi GEM Group! I am interested in ${project.name} in ${project.city}. Please share details.`
-  )
 
   return (
     <>
@@ -149,7 +158,7 @@ export default async function ProjectPage({
       ))}
 
       {/* ── HERO ── */}
-      <div className="relative w-full h-[60vh] min-h-[380px] bg-gray-900">
+      <div className="relative mx-auto w-full max-w-[1280px] h-[52vh] min-h-[320px] bg-gray-900 md:h-[60vh] md:min-h-[380px]">
         {heroImage ? (
           <Image
             src={heroImage}
@@ -158,7 +167,8 @@ export default async function ProjectPage({
             className="object-cover opacity-75"
             priority
             fetchPriority="high"
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 1280px"
+            quality={72}
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900" />
@@ -241,51 +251,8 @@ export default async function ProjectPage({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Left: Overview (server rendered) + deferred interactive tabs */}
+          {/* Left: Tabs */}
           <div className="lg:col-span-2">
-            <section id="project-overview" className="space-y-8">
-              {project.description && (
-                <div>
-                  <h2 className="mb-3 text-xl font-extrabold text-gray-900">About {project.name}</h2>
-                  <p className="whitespace-pre-line leading-relaxed text-gray-700">{project.description}</p>
-                </div>
-              )}
-
-              <div>
-                <h2 className="mb-4 text-xl font-extrabold text-gray-900">Project Highlights</h2>
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                  {[
-                    { icon: '🏙️', label: 'City', value: project.city },
-                    { icon: '📐', label: 'Plot Size', value: project.plot_size_min ? `${project.plot_size_min}+ sq.yd` : null },
-                    { icon: '🌍', label: 'Total Area', value: project.total_area ? `${project.total_area} Acres` : null },
-                    { icon: '🏠', label: 'Total Plots', value: project.total_plots?.toString() ?? null },
-                  ]
-                    .filter((s) => s.value)
-                    .map(({ icon, label, value }) => (
-                      <div key={label} className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-center">
-                        <p className="mb-1 text-2xl">{icon}</p>
-                        <p className="text-xs uppercase tracking-wide text-gray-700">{label}</p>
-                        <p className="mt-1 text-sm font-extrabold text-gray-900">{value}</p>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {(project.nearby ?? []).length > 0 && (
-                <div>
-                  <h2 className="mb-4 text-xl font-extrabold text-gray-900">Location Advantages</h2>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    {(project.nearby ?? []).map((n: string) => (
-                      <div key={n} className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
-                        <span className="mt-0.5 text-green-600">📍</span>
-                        <span className="text-sm text-gray-800">{n}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-
             <ProjectTabs project={project} />
           </div>
 
@@ -302,29 +269,11 @@ export default async function ProjectPage({
                   <p key={t} className="text-sm text-gray-700">{t}</p>
                 ))}
               </div>
-              <a href={`tel:+${phone}`}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-sm font-semibold text-white transition hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2">
-                📞 Call: +91 80084 61987
-              </a>
             </div>
           </div>
         </div>
       </main>
-
-      {/* ── FIXED BOTTOM BAR — mobile only ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden border-t border-gray-200 bg-white shadow-2xl">
-        <a href={`tel:+${phone}`}
-          className="flex flex-1 items-center justify-center gap-2 bg-blue-700 py-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">
-          📞 Call Now
-        </a>
-        <a href={`https://wa.me/${phone}?text=${waMsg}`}
-          target="_blank" rel="noopener noreferrer"
-          className="flex flex-1 items-center justify-center gap-2 bg-[#25D366] py-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2">
-          💬 WhatsApp
-        </a>
-      </div>
-
-      {/* ── FLOATING WHATSAPP — desktop only ── */}
+      {/* ── FLOATING CONTACT ICONS — mobile + desktop ── */}
       <DeferredWhatsAppButton
         projectName={project.name}
         city={project.city}

@@ -20,6 +20,7 @@ export interface Project {
   address: string | null
   seo_title: string | null
   seo_description: string | null
+  seo_keywords: string[] | null
   plot_size_min: number | null
   plot_size_max: number | null
   total_plots: number | null

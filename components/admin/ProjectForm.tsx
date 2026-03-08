@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase/client'
 import { toSlug } from '@/lib/slugify'
 import { revalidateProjectPages } from '@/lib/revalidate'
+import { generateSeoKeywords } from '@/lib/seo-keywords'
 import MediaUploader, { type UploadedMedia } from './MediaUploader'
 import type { Project } from '@/types'
 import AIParseButton from '@/components/admin/AIParseButton'
@@ -44,6 +45,7 @@ export default function ProjectForm({ project, mode }: Props) {
   const supabase = createClient()
 
   const [media,   setMedia]   = useState<UploadedMedia[]>(project?.project_media ?? [])
+  const [aiKeywords, setAiKeywords] = useState<string[]>(project?.seo_keywords ?? [])
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
@@ -103,6 +105,9 @@ export default function ProjectForm({ project, mode }: Props) {
     if (parsed.map_embed_url)   setValue('map_embed_url',   parsed.map_embed_url)
     if (Array.isArray(parsed.amenities)) setValue('amenities', parsed.amenities.join(', '))
     if (Array.isArray(parsed.nearby))    setValue('nearby',    parsed.nearby.join(', '))
+    if (Array.isArray(parsed.seo_keywords)) {
+      setAiKeywords(parsed.seo_keywords.map((item) => String(item)).filter(Boolean))
+    }
   }
 
   // ── Form submit ──────────────────────────────────────────
@@ -115,6 +120,17 @@ export default function ProjectForm({ project, mode }: Props) {
 
     const amenitiesArray = data.amenities.split(',').map(s => s.trim()).filter(Boolean)
     const nearbyArray    = data.nearby.split(',').map(s => s.trim()).filter(Boolean)
+    const seoKeywordsArray = generateSeoKeywords({
+      name: data.name,
+      city: data.city,
+      state: data.state,
+      projectType: data.project_type,
+      priceDisplay: data.price_display,
+      pricePerSqyd: data.price_per_sqyd ? parseFloat(data.price_per_sqyd) : null,
+      amenities: amenitiesArray,
+      nearby: nearbyArray,
+      customKeywords: aiKeywords,
+    })
 
     // First image in media array is always the cover
     const coverImage = media.find(m => m.media_type === 'image')
@@ -129,6 +145,7 @@ export default function ProjectForm({ project, mode }: Props) {
       description:     data.description     || null,
       seo_title:       data.seo_title       || null,
       seo_description: data.seo_description || null,
+      seo_keywords:    seoKeywordsArray,
       // rera_number:     data.rera_number     || null,
       plot_size_min:   data.plot_size_min   ? parseInt(data.plot_size_min)    : null,
       plot_size_max:   data.plot_size_max   ? parseInt(data.plot_size_max)    : null,
