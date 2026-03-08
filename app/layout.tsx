@@ -6,9 +6,9 @@
 // → Root HTML structure
 // → Global font
 // ─────────────────────────────────────────────────────
-import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -41,7 +41,17 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         {children}
-        { gaId ? <GoogleAnalytics gaId={gaId} /> : null}
+        
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
+            </Script>
+          </>
+       
       </body>
     </html>
   )
