@@ -6,7 +6,8 @@
 // Protected by REVALIDATION_SECRET so only your app can call it
 // ─────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { inferListingCity } from '@/lib/city-categories'
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,20 +33,27 @@ export async function POST(request: NextRequest) {
     // ── Revalidate specific project page ───────────────
     // This tells Vercel: "rebuild /shadnagar/sree-laxmi-balaji-township"
     // Only that one page is rebuilt — not the whole site
-    const projectPath = `/${city_slug}/${slug}`
+    const canonicalCity = inferListingCity({ listingCity: city_slug, citySlug: city_slug })
+    const projectPath = `/${canonicalCity}/${slug}`
     revalidatePath(projectPath)
 
     // Also revalidate city page (project count may have changed)
-    revalidatePath(`/${city_slug}`)
+    revalidatePath(`/${canonicalCity}`)
 
     // Also revalidate homepage (featured/latest list may have changed)
     revalidatePath('/')
+    revalidatePath('/search')
+    revalidateTag(`project:${slug}`, 'max')
+    revalidateTag(`city:${canonicalCity}`, 'max')
+    revalidateTag('projects:list', 'max')
+    revalidateTag('projects:featured', 'max')
+    revalidateTag('projects:latest', 'max')
 
-    console.log(`[Revalidate] Rebuilt: ${projectPath}, /${city_slug}, /`)
+    console.log(`[Revalidate] Rebuilt: ${projectPath}, /${canonicalCity}, /`)
 
     return NextResponse.json({
       revalidated: true,
-      paths: [projectPath, `/${city_slug}`, '/'],
+      paths: [projectPath, `/${canonicalCity}`, '/', '/search'],
     })
 
   } catch (err) {

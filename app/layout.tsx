@@ -11,6 +11,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
 // Static metadata for the root — each page overrides this
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   description: 'Explore DTCP approved plots, villas and townships across Hyderabad, Bangalore, Vijayawada and Vizag.',
   // Prevents Google indexing your Vercel preview URLs
   // Only your main vercel.app domain gets indexed
-  metadataBase: new URL('https://real-estate-jbvercel.app'),
+  metadataBase: new URL(siteUrl),
 }
 
 export default function RootLayout({

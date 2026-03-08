@@ -1,11 +1,13 @@
 // app/(public)/[city]/[slug]/page.tsx
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
-import { cache } from 'react'
 import type { Metadata } from 'next'
 import type { ProjectWithMedia } from '@/types'
 import { generateSeoKeywords } from '@/lib/seo-keywords'
+import { getListingCityLabel, inferListingCity } from '@/lib/city-categories'
+import { getCachedProjectByCityAndSlug } from '@/lib/public-projects-cache'
+import { getCloudinaryHeroImage } from '@/lib/cloudinary'
 import ProjectTabs from '@/components/public/ProjectTabs'
 import DeferredBookingForm from '@/components/public/DeferredBookingForm'
 import DeferredWhatsAppButton from '@/components/public/DeferredWhatsAppButton'
@@ -24,23 +26,17 @@ function pickNonEmpty(...values: Array<string | null | undefined>) {
 export async function generateStaticParams() {
   const { data } = await supabaseAdmin
     .from('projects')
-    .select('city_slug, slug')
+    .select('city, city_slug, listing_city, slug')
     .eq('published', true)
-  return (data ?? []).map((p) => ({ city: p.city_slug, slug: p.slug }))
+  return (data ?? []).map((p) => ({
+    city: inferListingCity({
+      listingCity: p.listing_city,
+      city: p.city,
+      citySlug: p.city_slug,
+    }),
+    slug: p.slug,
+  }))
 }
-
-const getProjectByCityAndSlug = cache(async (city: string, slug: string): Promise<ProjectWithMedia | null> => {
-  const { data } = await supabaseAdmin
-    .from('projects')
-    .select('*, project_media(*)')
-    .eq('city_slug', city)
-    .eq('slug', slug)
-    .eq('published', true)
-    .order('display_order', { referencedTable: 'project_media', ascending: true })
-    .single()
-
-  return data ?? null
-})
 
 export async function generateMetadata({
   params,
@@ -48,7 +44,7 @@ export async function generateMetadata({
   params: Promise<{ city: string; slug: string }>
 }): Promise<Metadata> {
   const { city, slug } = await params
-  const p = await getProjectByCityAndSlug(city, slug)
+  const p = await getCachedProjectByCityAndSlug(city, slug)
 
   if (!p) return { title: 'Project Not Found' }
 
@@ -75,7 +71,13 @@ export async function generateMetadata({
         amenities: p.amenities ?? [],
         nearby: p.nearby ?? [],
       })
-  const canonical = `${process.env.NEXT_PUBLIC_SITE_URL}/${city}/${slug}`
+  const canonicalCity = inferListingCity({
+    listingCity: p.listing_city,
+    city: p.city,
+    citySlug: p.city_slug,
+  })
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const canonical = `${siteUrl}/${canonicalCity}/${slug}`
 
   return {
     title, description, keywords,
@@ -93,7 +95,13 @@ export async function generateMetadata({
 }
 
 function buildSchemas(project: ProjectWithMedia, city: string, slug: string) {
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/${city}/${slug}`
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const url = `${siteUrl}/${city}/${slug}`
+  const cityLabel = getListingCityLabel(city)
+  const imageUrls = [
+    project.cover_image_url,
+    ...(project.project_media ?? []).map((media) => media.url),
+  ].filter(Boolean) as string[]
   return [
     {
       '@context': 'https://schema.org', '@type': 'RealEstateListing',
@@ -116,11 +124,32 @@ function buildSchemas(project: ProjectWithMedia, city: string, slug: string) {
     {
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: process.env.NEXT_PUBLIC_SITE_URL },
-        { '@type': 'ListItem', position: 2, name: project.city, item: `${process.env.NEXT_PUBLIC_SITE_URL}/${city}` },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+        { '@type': 'ListItem', position: 2, name: cityLabel, item: `${siteUrl}/${city}` },
         { '@type': 'ListItem', position: 3, name: project.name, item: url },
       ],
     },
+    {
+      '@context': 'https://schema.org', '@type': 'WebPage',
+      name: project.name,
+      url,
+      primaryImageOfPage: imageUrls[0] ?? undefined,
+    },
+    ...(imageUrls.length > 0
+      ? [{
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          itemListElement: imageUrls.map((imageUrl, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            item: {
+              '@type': 'ImageObject',
+              contentUrl: imageUrl,
+              representativeOfPage: index === 0,
+            },
+          })),
+        }]
+      : []),
     {
       '@context': 'https://schema.org', '@type': 'FAQPage',
       mainEntity: [
@@ -144,11 +173,21 @@ export default async function ProjectPage({
   params: Promise<{ city: string; slug: string }>
 }) {
   const { city, slug } = await params
-  const project = await getProjectByCityAndSlug(city, slug)
+  const project = await getCachedProjectByCityAndSlug(city, slug)
   if (!project) notFound()
+  const canonicalCity = inferListingCity({
+    listingCity: project.listing_city,
+    city: project.city,
+    citySlug: project.city_slug,
+  })
+  if (city !== canonicalCity) {
+    redirect(`/${canonicalCity}/${slug}`)
+  }
+  const cityLabel = getListingCityLabel(city)
 
   const schemas  = buildSchemas(project, city, slug)
   const heroImage = project.cover_image_url ?? project.project_media?.[0]?.url ?? null
+  const heroImageOptimized = getCloudinaryHeroImage(heroImage)
 
   return (
     <>
@@ -159,16 +198,19 @@ export default async function ProjectPage({
 
       {/* ── HERO ── */}
       <div className="relative mx-auto w-full max-w-[1280px] h-[52vh] min-h-[320px] bg-gray-900 md:h-[60vh] md:min-h-[380px]">
+        <div className="absolute inset-0 md:hidden bg-gradient-to-br from-slate-900 via-blue-900/90 to-cyan-900/70" />
+        <div className="pointer-events-none absolute -left-24 top-8 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl md:hidden" />
+        <div className="pointer-events-none absolute -right-28 bottom-8 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl md:hidden" />
         {heroImage ? (
           <Image
-            src={heroImage}
+            src={heroImageOptimized}
             alt={project.name}
             fill
-            className="object-cover opacity-75"
+            className="object-contain md:object-cover opacity-85"
             priority
             fetchPriority="high"
             sizes="(max-width: 768px) 100vw, 1280px"
-            quality={72}
+            quality={75}
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900" />
@@ -244,7 +286,7 @@ export default async function ProjectPage({
         <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-gray-700">
           <a href="/" className="font-medium hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">Home</a>
           <span>/</span>
-          <a href={`/${city}`} className="font-medium capitalize hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">{project.city}</a>
+          <a href={`/${city}`} className="font-medium capitalize hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">{cityLabel}</a>
           <span>/</span>
           <span className="font-semibold text-gray-900">{project.name}</span>
         </nav>

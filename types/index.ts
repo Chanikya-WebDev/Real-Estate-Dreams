@@ -15,6 +15,7 @@ export interface Project {
   slug: string
   city: string
   city_slug: string
+  listing_city: string | null
   state: string
   description: string | null
   address: string | null

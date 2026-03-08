@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toSlug } from '@/lib/slugify'
 import { revalidateProjectPages } from '@/lib/revalidate'
 import { generateSeoKeywords } from '@/lib/seo-keywords'
+import { CITY_CATEGORIES, inferListingCity, type ListingCitySlug } from '@/lib/city-categories'
 import MediaUploader, { type UploadedMedia } from './MediaUploader'
 import type { Project } from '@/types'
 import AIParseButton from '@/components/admin/AIParseButton'
@@ -14,11 +15,13 @@ import AIParseButton from '@/components/admin/AIParseButton'
 type FormValues = {
   name: string
   city: string
+  listing_city: ListingCitySlug
   state: string
   address: string
   description: string
   seo_title: string
   seo_description: string
+  seo_keywords: string
   plot_size_min: string
   plot_size_max: string
   total_plots: string
@@ -59,11 +62,17 @@ export default function ProjectForm({ project, mode }: Props) {
     defaultValues: {
       name:            project?.name            ?? '',
       city:            project?.city            ?? '',
+      listing_city:    inferListingCity({
+        listingCity: project?.listing_city,
+        city: project?.city,
+        citySlug: project?.city_slug,
+      }),
       state:           project?.state           ?? 'Telangana',
       address:         project?.address         ?? '',
       description:     project?.description     ?? '',
       seo_title:       project?.seo_title       ?? '',
       seo_description: project?.seo_description ?? '',
+      seo_keywords:    project?.seo_keywords?.join(', ') ?? '',
       plot_size_min:   project?.plot_size_min?.toString()  ?? '',
       plot_size_max:   project?.plot_size_max?.toString()  ?? '',
       total_plots:     project?.total_plots?.toString()    ?? '',
@@ -83,11 +92,13 @@ export default function ProjectForm({ project, mode }: Props) {
 
   const projectName = watch('name')
   const projectCity = watch('city')
+  const projectListingCity = watch('listing_city')
 
   // ── AI Auto-Fill handler ─────────────────────────────────
   function handleAIParsed(parsed: Record<string, any>) {
     if (parsed.name)            setValue('name',            parsed.name)
     if (parsed.city)            setValue('city',            parsed.city)
+    if (parsed.listing_city)    setValue('listing_city',    inferListingCity({ listingCity: parsed.listing_city }))
     if (parsed.state)           setValue('state',           parsed.state)
     if (parsed.address)         setValue('address',         parsed.address)
     if (parsed.project_type)    setValue('project_type',    parsed.project_type)
@@ -100,6 +111,7 @@ export default function ProjectForm({ project, mode }: Props) {
     if (parsed.description)     setValue('description',     parsed.description)
     if (parsed.seo_title)       setValue('seo_title',       parsed.seo_title)
     if (parsed.seo_description) setValue('seo_description', parsed.seo_description)
+    if (Array.isArray(parsed.seo_keywords)) setValue('seo_keywords', parsed.seo_keywords.join(', '))
     if (parsed.latitude)        setValue('latitude',        String(parsed.latitude))
     if (parsed.longitude)       setValue('longitude',       String(parsed.longitude))
     if (parsed.map_embed_url)   setValue('map_embed_url',   parsed.map_embed_url)
@@ -116,10 +128,11 @@ export default function ProjectForm({ project, mode }: Props) {
     setError('')
 
     const slug     = toSlug(data.name)
-    const citySlug = toSlug(data.city)
+    const citySlug = data.listing_city
 
     const amenitiesArray = data.amenities.split(',').map(s => s.trim()).filter(Boolean)
     const nearbyArray    = data.nearby.split(',').map(s => s.trim()).filter(Boolean)
+    const manualKeywords = data.seo_keywords.split(',').map((s) => s.trim()).filter(Boolean)
     const seoKeywordsArray = generateSeoKeywords({
       name: data.name,
       city: data.city,
@@ -129,7 +142,7 @@ export default function ProjectForm({ project, mode }: Props) {
       pricePerSqyd: data.price_per_sqyd ? parseFloat(data.price_per_sqyd) : null,
       amenities: amenitiesArray,
       nearby: nearbyArray,
-      customKeywords: aiKeywords,
+      customKeywords: manualKeywords.length > 0 ? manualKeywords : aiKeywords,
     })
 
     // First image in media array is always the cover
@@ -140,6 +153,7 @@ export default function ProjectForm({ project, mode }: Props) {
       slug,
       city:            data.city.trim(),
       city_slug:       citySlug,
+      listing_city:    citySlug,
       state:           data.state.trim(),
       address:         data.address         || null,
       description:     data.description     || null,
@@ -226,7 +240,7 @@ export default function ProjectForm({ project, mode }: Props) {
       {/* URL Preview */}
       {(projectName || projectCity) && (
         <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700 font-mono">
-          🔗 URL: /{toSlug(projectCity || 'city')}/{toSlug(projectName || 'project-name')}
+          🔗 URL: /{projectListingCity || 'city'}/{toSlug(projectName || 'project-name')} <span className="text-blue-500">({projectCity || 'locality'})</span>
         </div>
       )}
 
@@ -248,7 +262,7 @@ export default function ProjectForm({ project, mode }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>City *</Label>
+              <Label>Project Locality / Area *</Label>
               <input
                 {...register('city', { required: 'City is required' })}
                 className={inputCls}
@@ -257,9 +271,18 @@ export default function ProjectForm({ project, mode }: Props) {
               {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>}
             </div>
             <div>
-              <Label>State</Label>
-              <input {...register('state')} className={inputCls} />
+              <Label>Listed Under City *</Label>
+              <select {...register('listing_city', { required: 'Listing city is required' })} className={inputCls}>
+                {CITY_CATEGORIES.map((city) => (
+                  <option key={city.slug} value={city.slug}>{city.label}</option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          <div>
+            <Label>State</Label>
+            <input {...register('state')} className={inputCls} />
           </div>
 
           <div>
@@ -401,6 +424,17 @@ export default function ProjectForm({ project, mode }: Props) {
               className={inputCls}
               placeholder="Buy RERA approved plots in Shadnagar from ₹23,000/sq.yd. Book a free site visit today!"
             />
+          </div>
+
+          <div>
+            <Label>SEO Keywords (comma separated)</Label>
+            <textarea
+              {...register('seo_keywords')}
+              rows={3}
+              className={inputCls}
+              placeholder="shadnagar plots, hyderabad villa plots, dtcp approved plots, rera approved township"
+            />
+            <p className="text-xs text-gray-400 mt-1">AI fills this automatically. You can edit manually before save.</p>
           </div>
         </div>
 

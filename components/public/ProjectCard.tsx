@@ -2,16 +2,24 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin, LayoutGrid, Maximize2 } from 'lucide-react'
 import type { Project } from '@/types'
+import { inferListingCity } from '@/lib/city-categories'
+import { getCloudinaryCardImage } from '@/lib/cloudinary'
 
 export default function ProjectCard({ project }: { project: Project }) {
-  const href = `/${project.city_slug}/${project.slug}`
+  const routeCity = inferListingCity({
+    listingCity: project.listing_city,
+    city: project.city,
+    citySlug: project.city_slug,
+  })
+  const href = `/${routeCity}/${project.slug}`
+  const cardImage = getCloudinaryCardImage(project.cover_image_url)
 
   return (
     <Link href={href} className="group block overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-52 w-full bg-blue-50 sm:h-56">
         {project.cover_image_url ? (
           <Image
-            src={project.cover_image_url}
+            src={cardImage}
             alt={`${project.name} - ${project.city}`}
             fill
             className="object-cover transition duration-300 group-hover:scale-105"

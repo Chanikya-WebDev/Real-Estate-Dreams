@@ -1,8 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
 import ProjectCard from '@/components/public/ProjectCard'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import type { Project } from '@/types'
+import { getCachedFeaturedProjects, getCachedLatestProjects } from '@/lib/public-projects-cache'
 
 export const revalidate = 3600
 
@@ -23,33 +22,10 @@ const CITIES = [
   { name: 'Vizag', slug: 'vizag', emoji: '⛵' },
 ]
 
-async function getFeaturedProjects(): Promise<Project[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('published', true)
-    .eq('featured', true)
-    .order('created_at', { ascending: false })
-    .limit(6)
-  return data ?? []
-}
-
-async function getLatestProjects(): Promise<Project[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('published', true)
-    .order('created_at', { ascending: false })
-    .limit(8)
-  return data ?? []
-}
-
 export default async function HomePage() {
   const [featuredProjects, latestProjects] = await Promise.all([
-    getFeaturedProjects(),
-    getLatestProjects(),
+    getCachedFeaturedProjects(),
+    getCachedLatestProjects(),
   ])
 
   return (

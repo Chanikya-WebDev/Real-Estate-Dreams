@@ -18,6 +18,7 @@ export default function Navbar() {
             ['Home', '/'],
             ['Projects', '/search'],
             ['Hyderabad', '/hyderabad'],
+            ['Bangalore', '/bangalore'],
             ['Vijayawada', '/vijayawada'],
             ['Vizag', '/vizag'],
           ].map(([label, href]) => (
@@ -46,6 +47,7 @@ export default function Navbar() {
             <Link href="/" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Home</Link>
             <Link href="/search" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Projects</Link>
             <Link href="/hyderabad" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Hyderabad</Link>
+            <Link href="/bangalore" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Bangalore</Link>
             <Link href="/vijayawada" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Vijayawada</Link>
             <Link href="/vizag" onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50">Vizag</Link>
             <a href="tel:+919876543210" className="mt-2 rounded-lg bg-blue-700 px-3 py-2 text-center text-sm font-semibold text-white">📞 Call Us</a>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import type { ProjectMedia } from '@/types'
+import { getCloudinaryOptimizedImage, getCloudinaryThumbImage } from '@/lib/cloudinary'
 
 export default function ProjectGallery({ media }: { media: ProjectMedia[] }) {
   const images = media.filter((m) => m.media_type === 'image')
@@ -22,7 +23,7 @@ export default function ProjectGallery({ media }: { media: ProjectMedia[] }) {
             onClick={() => setSelected(i)}
           >
             <Image
-              src={img.url}
+              src={getCloudinaryThumbImage(img.url)}
               alt={img.alt_text ?? `Project image ${i + 1}`}
               fill
               className="object-cover hover:scale-105 transition"
@@ -51,7 +52,7 @@ export default function ProjectGallery({ media }: { media: ProjectMedia[] }) {
           </button>
           <div className="relative w-full max-w-3xl h-96">
             <Image
-              src={images[selected].url}
+              src={getCloudinaryOptimizedImage(images[selected].url)}
               alt={images[selected].alt_text ?? ''}
               fill
               className="object-contain"

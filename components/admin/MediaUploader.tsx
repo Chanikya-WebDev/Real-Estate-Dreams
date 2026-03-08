@@ -3,7 +3,8 @@
 import { useRef, useState } from 'react'
 import { CldUploadWidget } from 'next-cloudinary'
 import Image from 'next/image'
-import { X, Upload, Star, Play, ImageIcon, GripVertical } from 'lucide-react'
+import { X, Upload, Star, Play, ImageIcon } from 'lucide-react'
+import { getCloudinaryOptimizedImage, getCloudinaryThumbImage } from '@/lib/cloudinary'
 
 export interface UploadedMedia {
   cloudinary_id: string
@@ -31,14 +32,14 @@ export default function MediaUploader({ media, onChange }: Props) {
     if (!info?.public_id) return
 
     const isVideo = info.resource_type === 'video'
+    const baseSecureUrl = info.secure_url as string
+    const videoPoster = baseSecureUrl
+      .replace('/upload/', '/upload/so_0/')
+      .replace(/\.[^.]+$/, '.jpg')
     const newItem: UploadedMedia = {
       cloudinary_id: info.public_id,
-      url:           info.secure_url,
-      thumbnail_url: isVideo
-        ? info.secure_url
-            .replace('/upload/', '/upload/so_0/')
-            .replace(/\.[^.]+$/, '.jpg')
-        : info.secure_url,
+      url:           getCloudinaryOptimizedImage(baseSecureUrl),
+      thumbnail_url: isVideo ? getCloudinaryThumbImage(videoPoster) : getCloudinaryThumbImage(baseSecureUrl),
       media_type:    isVideo ? 'video' : 'image',
       display_order: mediaRef.current.length,
     }
@@ -86,10 +87,7 @@ export default function MediaUploader({ media, onChange }: Props) {
       <CldUploadWidget
         uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
         options={{
-          multiple:             true,
-          resourceType:         'auto',
-          maxFiles:             30,
-          clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov'],
+          sources: ['local'],
         }}
         onSuccess={handleUploadSuccess}
       >

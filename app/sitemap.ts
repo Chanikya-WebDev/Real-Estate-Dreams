@@ -1,48 +1,44 @@
-// app/sitemap.ts
-import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import type { MetadataRoute } from 'next'
+import { CITY_CATEGORIES, inferListingCity } from '@/lib/city-categories'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient()
-  const { data: projects } = await supabase
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+  const { data: projects } = await supabaseAdmin
     .from('projects')
-    .select('city_slug, slug, updated_at')
+    .select('city_slug, listing_city, slug, updated_at')
     .eq('published', true)
 
-  const projectPages = (projects ?? []).map((p) => ({
-    url: `https://yourbrand.vercel.app/${p.city_slug}/${p.slug}`,
-    lastModified: new Date(p.updated_at),
-    changeFrequency: 'weekly' as const,
-    priority: 0.9,
+  const projectPages = (projects ?? []).map((project) => {
+    const routeCity = inferListingCity({
+      listingCity: project.listing_city,
+      citySlug: project.city_slug,
+    })
+
+    return {
+      url: `${siteUrl}/${routeCity}/${project.slug}`,
+      lastModified: new Date(project.updated_at),
+      changeFrequency: 'daily' as const,
+      priority: 1,
+    }
+  })
+
+  const cityPages = CITY_CATEGORIES.map((city) => ({
+    url: `${siteUrl}/${city.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.8,
   }))
 
   return [
     {
-      url: 'https://yourbrand.vercel.app',
+      url: siteUrl,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1.0,
+      priority: 0.7,
     },
-    {
-      url: 'https://yourbrand.vercel.app/hyderabad',
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://yourbrand.vercel.app/vizag',
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://yourbrand.vercel.app/vijayawada',
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://yourbrand.vercel.app/bangalore',
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
+    ...cityPages,
     ...projectPages,
   ]
 }

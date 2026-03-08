@@ -3,13 +3,14 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { PlusCircle, Pencil, Eye, EyeOff } from 'lucide-react'
 import DeleteProjectButton from '@/components/admin/DeleteProjectButton'
+import { inferListingCity } from '@/lib/city-categories'
 
 export const revalidate = 0
 
 async function getAllProjects() {
   const { data } = await supabaseAdmin
     .from('projects')
-    .select('id, name, city, city_slug, slug, project_type, published, featured, created_at, cover_image_url')
+    .select('id, name, city, city_slug, listing_city, slug, project_type, published, featured, created_at, cover_image_url')
     .order('created_at', { ascending: false })
   return data ?? []
 }
@@ -51,7 +52,13 @@ export default async function ProjectsPage() {
                 </td>
               </tr>
             )}
-            {projects.map((project) => (
+            {projects.map((project) => {
+              const routeCity = inferListingCity({
+                listingCity: project.listing_city,
+                city: project.city,
+                citySlug: project.city_slug,
+              })
+              return (
               <tr key={project.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-slate-900">
                   <div className="flex flex-col">
@@ -61,13 +68,13 @@ export default async function ProjectsPage() {
                         <span className="ml-2 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">Featured</span>
                       )}
                     </span>
-                    {project.city_slug && project.slug && (
+                    {routeCity && project.slug && (
                       <a
-                        href={`/${project.city_slug}/${project.slug}`}
+                        href={`/${routeCity}/${project.slug}`}
                         target="_blank"
                         className="text-xs text-blue-500 hover:underline mt-0.5"
                       >
-                        /{project.city_slug}/{project.slug} ↗
+                        /{routeCity}/{project.slug} ↗
                       </a>
                     )}
                   </div>
@@ -100,7 +107,8 @@ export default async function ProjectsPage() {
                   </div>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table></div>
       </div>

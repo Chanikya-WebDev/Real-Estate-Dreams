@@ -26,7 +26,10 @@ async function getProjects(filters: SearchParams): Promise<Project[]> {
     .order('featured', { ascending: false })
     .order('created_at', { ascending: false })
 
-  if (filters.city) query = query.eq('city_slug', filters.city.toLowerCase())
+  if (filters.city) {
+    const city = filters.city.toLowerCase()
+    query = query.or(`city_slug.eq.${city},listing_city.eq.${city}`)
+  }
   if (filters.type) query = query.eq('project_type', filters.type)
   if (filters.q) query = query.or(`name.ilike.%${filters.q}%,city.ilike.%${filters.q}%,address.ilike.%${filters.q}%`)
 
