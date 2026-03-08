@@ -7,10 +7,10 @@ import type { ProjectWithMedia } from '@/types'
 import { generateSeoKeywords } from '@/lib/seo-keywords'
 import { getListingCityLabel, inferListingCity } from '@/lib/city-categories'
 import { getCachedProjectByCityAndSlug } from '@/lib/public-projects-cache'
-import { getCloudinaryHeroImage } from '@/lib/cloudinary'
+import HeroDesktopSlider from '@/components/public/HeroDesktopSlider'
 import ProjectTabs from '@/components/public/ProjectTabs'
 import DeferredBookingForm from '@/components/public/DeferredBookingForm'
-import DeferredWhatsAppButton from '@/components/public/DeferredWhatsAppButton'
+import FloatingActionButtons from '@/components/public/FloatingActionButtons'
 
 export const revalidate = 3600
 
@@ -187,7 +187,12 @@ export default async function ProjectPage({
 
   const schemas  = buildSchemas(project, city, slug)
   const heroImage = project.cover_image_url ?? project.project_media?.[0]?.url ?? null
-  const heroImageOptimized = getCloudinaryHeroImage(heroImage)
+  const heroImages = [
+    project.cover_image_url,
+    ...(project.project_media ?? [])
+      .filter((media) => media.media_type === 'image')
+      .map((media) => media.url),
+  ].filter(Boolean) as string[]
 
   return (
     <>
@@ -198,20 +203,23 @@ export default async function ProjectPage({
 
       {/* ── HERO ── */}
       <div className="relative mx-auto w-full max-w-[1280px] h-[52vh] min-h-[320px] bg-gray-900 md:h-[60vh] md:min-h-[380px]">
-        <div className="absolute inset-0 md:hidden bg-gradient-to-br from-slate-900 via-blue-900/90 to-cyan-900/70" />
-        <div className="pointer-events-none absolute -left-24 top-8 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl md:hidden" />
-        <div className="pointer-events-none absolute -right-28 bottom-8 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl md:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/90 to-cyan-900/70" />
+        <div className="pointer-events-none absolute -left-24 top-8 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-28 bottom-8 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
         {heroImage ? (
-          <Image
-            src={heroImageOptimized}
-            alt={project.name}
-            fill
-            className="object-contain md:object-cover opacity-85"
-            priority
-            fetchPriority="high"
-            sizes="(max-width: 768px) 100vw, 1280px"
-            quality={75}
-          />
+          <>
+            <Image
+              src={heroImage}
+              alt={project.name}
+              fill
+              className="object-contain opacity-90 md:hidden"
+              priority
+              fetchPriority="high"
+              sizes="100vw"
+              quality={75}
+            />
+            <HeroDesktopSlider images={heroImages} projectName={project.name} />
+          </>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900" />
         )}
@@ -315,8 +323,9 @@ export default async function ProjectPage({
           </div>
         </div>
       </main>
-      {/* ── FLOATING CONTACT ICONS — mobile + desktop ── */}
-      <DeferredWhatsAppButton
+      {/* ── FLOATING ACTIONS — always visible ── */}
+      <FloatingActionButtons
+        projectId={project.id}
         projectName={project.name}
         city={project.city}
         priceDisplay={project.price_display}
