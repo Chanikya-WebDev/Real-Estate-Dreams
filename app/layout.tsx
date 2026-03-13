@@ -18,18 +18,18 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 export const metadata: Metadata = {
   title: {
     // %s = page-specific title injected by generateMetadata()
-    // Result: "Sree Laxmi Balaji Township | DreamPlots"
-    template: '%s | DreamPlots',
-    default: 'DreamPlots — Plots & Villas in Hyderabad, Vizag, Vijayawada',
+    // Result: "Sree Laxmi Balaji Township | Open Plots and Villas"
+    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME ?? 'Open Plots and Villas'}`,
+    default: `${process.env.NEXT_PUBLIC_SITE_NAME ?? 'Open Plots and Villas'} in Hyderabad, Telangana & Andhra Pradesh`,
   },
-  description: 'Explore DTCP approved plots, villas and townships across Hyderabad, Bangalore, Vijayawada and Vizag.',
-  // Prevents Google indexing your Vercel preview URLs
-  // Only your main vercel.app domain gets indexed
-    verification: {
+  description:
+    'Buy RERA & DTCP approved open plots and villas in Hyderabad, Vizag, Vijayawada and Bangalore. GEM Group Realty — 10+ years of trust.',
+  verification: {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
   },
   metadataBase: new URL(siteUrl),
 }
+
 
 export default function RootLayout({
   children,

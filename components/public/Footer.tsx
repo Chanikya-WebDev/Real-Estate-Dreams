@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 md:grid-cols-3">
         <div>
           <h3 className="mb-3 text-lg font-extrabold text-white">
-            DreamPlots <span className="text-blue-200">Realty</span>
+            {process.env.NEXT_PUBLIC_SITE_NAME} — Your Trusted Real Estate Partner
           </h3>
           <p className="text-sm leading-relaxed text-blue-100">Trusted real estate partner for plots and villas across Telangana and Andhra Pradesh.</p>
         </div>
@@ -29,7 +29,7 @@ export default function Footer() {
       </div>
 
       <div className="mt-8 text-center text-xs text-blue-200/80">
-        © {new Date().getFullYear()} DreamPlots Realty. All rights reserved.
+        © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_SITE_NAME}. All rights reserved.
       </div>
     </footer>
   )

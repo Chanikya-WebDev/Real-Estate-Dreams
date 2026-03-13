@@ -1,10 +1,10 @@
-# DreamPlots
+# Open Plots And Villas
 
 High-performance real estate platform for publishing, discovering, and converting plot/villa projects with SEO-first project pages.
 
 ## Overview
 
-DreamPlots is a production-oriented web application focused on one business outcome: when users search project terms (city + project name + plot intent), they should land directly on the project detail page with strong metadata, clear information, and quick lead capture.
+Open Plots And Villas is a production-oriented web application focused on one business outcome: when users search project terms (city + project name + plot intent), they should land directly on the project detail page with strong metadata, clear information, and quick lead capture.
 
 ## Key Highlights
 

@@ -11,8 +11,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="text-lg font-extrabold tracking-tight text-blue-800 sm:text-xl">
           <span className="inline-flex items-center gap-2">
-            <span>DreamPlots</span>
-            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">Realty</span>
+            <span>{process.env.NEXT_PUBLIC_SITE_NAME}</span>
           </span>
         </Link>
 

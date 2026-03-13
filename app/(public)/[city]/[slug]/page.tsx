@@ -53,24 +53,45 @@ export async function generateMetadata({
     `${p.total_plots ?? 'Premium'} plots in ${p.city}. From ${p.plot_size_min ?? 'select'} sq.yards. ` +
     `${p.total_area ?? 'Prime'} acres. ${p.price_display ?? 'Best value pricing'}. RERA & DTCP approved. Bank loans available.`
 
-  const title = pickNonEmpty(p.seo_title, fallbackTitle)
+  const title = p.seo_title
+    ?? `Open Plots in ${p.city} – ${p.name} | GEM Group`
   const description = pickNonEmpty(
     p.seo_description,
     fallbackDescription,
-    `${p.name} premium plots in ${p.city}. Contact DreamPlots for pricing and site visit details.`,
+    `${p.name} premium plots in ${p.city}. Contact Open Plots And Villas for pricing and site visit details.`,
   )
-  const keywords = (p.seo_keywords && p.seo_keywords.length > 0)
-    ? p.seo_keywords
-    : generateSeoKeywords({
-        name: p.name,
-        city: p.city,
-        state: p.state,
-        projectType: p.project_type,
-        priceDisplay: p.price_display,
-        pricePerSqyd: p.price_per_sqyd,
-        amenities: p.amenities ?? [],
-        nearby: p.nearby ?? [],
-      })
+  const priceText = p.price_display ?? (p.price_per_sqyd ? `₹${p.price_per_sqyd.toLocaleString('en-IN')}/sq.yd` : null)
+  const keywords = [
+    `open plots in ${p.city}`,
+    `open plots ${p.city}`,
+    `open plots for sale in ${p.city}`,
+    `open plots near ${p.city}`,
+    `buy open plots ${p.city}`,
+    `open plots and villas ${p.city}`,
+    p.name,
+    `${p.name} ${p.city}`,
+    `open plots in ${p.state}`,
+    `open plots ${p.state}`,
+    `open plots near Hyderabad`,
+    `open plots near ORR`,
+    `RERA approved open plots ${p.city}`,
+    `DTCP approved open plots ${p.city}`,
+    `plots for sale ${p.city}`,
+    `residential plots ${p.city}`,
+    `gated community plots ${p.city}`,
+    `villa plots ${p.city}`,
+    priceText ? `open plots at ${priceText}` : null,
+    p.plot_size_min
+      ? `${p.plot_size_min} sqyd plots ${p.city}`
+      : null,
+    `bank loan plots ${p.city}`,
+    `free site visit plots ${p.city}`,
+    ...(p.nearby ?? []).slice(0, 4),
+    ...(p.amenities ?? []).slice(0, 4),
+    'GEM Group Realty',
+    'open plots and villas',
+    'open plots Hyderabad',
+  ].filter(Boolean).join(', ')
   const canonicalCity = inferListingCity({
     listingCity: p.listing_city,
     city: p.city,
@@ -83,7 +104,7 @@ export async function generateMetadata({
   return {
     title, description, keywords,
     openGraph: {
-      title, description, url: canonical, siteName: 'DreamPlots',
+      title, description, url: canonical, siteName: process.env.NEXT_PUBLIC_SITE_NAME,
       images: ogImage
         ? [{ url: ogImage, width: 1200, height: 630, alt: p.name }] : [],
       locale: 'en_IN', type: 'website',
@@ -159,7 +180,7 @@ function buildSchemas(project: ProjectWithMedia, city: string, slug: string) {
             text: `${project.price_display ?? `From ₹${project.price_per_sqyd}/sq.yd`}. Plot sizes from ${project.plot_size_min} sq.yards. Bank loans available.` } },
         { '@type': 'Question', name: `Is ${project.name} RERA approved?`,
           acceptedAnswer: { '@type': 'Answer',
-            text: `Yes, ${project.name} is RERA and DTCP approved. Contact DreamPlots for registration details.` } },
+            text: `Yes, ${project.name} is RERA and DTCP approved. Contact Open Plots And Villas for registration details.` } },
         { '@type': 'Question', name: `Where is ${project.name} located?`,
           acceptedAnswer: { '@type': 'Answer',
             text: `${project.address ?? project.city}, ${project.state}. ${(project.nearby ?? []).slice(0, 3).join(', ')}.` } },
@@ -252,7 +273,9 @@ export default async function ProjectPage({
                 <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">⭐ Featured</span>
               )}
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg tracking-tight">{project.name}</h1>
+            <h2 className="text-3xl font-bold text-white">
+              {project.name}
+            </h2>
             <p className="text-gray-200 mt-1">📍 {project.address ?? project.city}, {project.state}</p>
             {project.price_display && (
               <p className="text-yellow-300 font-bold text-xl mt-2">{project.price_display}</p>
@@ -261,23 +284,34 @@ export default async function ProjectPage({
         </div>
       </div>
 
-      {relatedSearchTerms.length > 0 && (
-        <section className="mx-auto w-full max-w-[1280px] border-b border-gray-200 bg-white px-4 py-4 md:px-6" aria-label="Popular searches related to this project">
-          <div className="mx-auto max-w-7xl">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Popular Searches</p>
-            <div className="flex flex-wrap gap-2">
-              {relatedSearchTerms.map((term) => (
-                <span
-                  key={term}
-                  className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800"
-                >
-                  {term}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <div className="bg-gray-50 rounded-2xl p-6">
+        <h2 className="text-base font-bold text-gray-700 mb-3">Popular Searches</h2>
+        <div className="flex flex-wrap gap-2">
+          {[
+            `Open plots in ${project.city}`,
+            `Open plots near ${project.city}`,
+            `RERA approved plots ${project.city}`,
+            `DTCP plots ${project.city}`,
+            `Open plots and villas ${project.city}`,
+            `Buy open plots ${project.city}`,
+            `Plots for sale ${project.city}`,
+            `Residential plots ${project.city}`,
+            `Bank loan plots ${project.city}`,
+            `Free site visit ${project.city}`,
+            `Open plots ${project.state}`,
+            'Open plots near Hyderabad',
+            'Open plots near ORR',
+            'GEM Group Realty',
+          ].map((term) => (
+            <span
+              key={term}
+              className="bg-white border border-gray-200 text-gray-500 text-xs px-3 py-1 rounded-full"
+            >
+              {term}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* ── STICKY STATS BAR ── */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
@@ -327,7 +361,9 @@ export default async function ProjectPage({
         <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-gray-700">
           <a href="/" className="font-medium hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">Home</a>
           <span>/</span>
-          <a href={`/${city}`} className="font-medium capitalize hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">{cityLabel}</a>
+          <a href={`/${city}`} className="hover:text-purple-600">
+            Open Plots {project.city}
+          </a>
           <span>/</span>
           <span className="font-semibold text-gray-900">{project.name}</span>
         </nav>
@@ -356,6 +392,11 @@ export default async function ProjectPage({
           </div>
         </div>
       </main>
+
+      <div className="mx-auto max-w-7xl px-4 pb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Open Plots and Villas</h1>
+      </div>
+
       {/* ── FLOATING ACTIONS — always visible ── */}
       <FloatingActionButtons
         projectName={project.name}

@@ -61,9 +61,40 @@ export default async function CityPage({ params }: { params: Promise<Params> }) 
 
   const projects: Project[] = await getCachedProjectsByCity(city)
   const cityLabel = getListingCityLabel(city)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const cityUrl = `${siteUrl}/${city}`
+  const cityPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `Projects in ${cityLabel}`,
+    description: `Explore all current and upcoming projects listed under ${cityLabel}.`,
+    url: cityUrl,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: process.env.NEXT_PUBLIC_SITE_NAME ?? 'Open Plots and Villas',
+      url: siteUrl,
+    },
+  }
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: projects.map((project, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'RealEstateListing',
+        name: project.name,
+        url: `${siteUrl}/${city}/${project.slug}`,
+      },
+    })),
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 md:py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([cityPageSchema, itemListSchema]) }}
+      />
       <header className="mb-8 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-cyan-50 p-6">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{cityLabel} Projects</h1>
         <p className="mt-2 text-sm text-slate-700">

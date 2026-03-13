@@ -34,7 +34,9 @@ export default function ProjectTabPanels({ active, project }: Props) {
   if (active === 'Gallery') {
     return (
       <div>
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Project Gallery</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-3">
+          Photos – {project.name} Open Plots
+        </h2>
         {(project.project_media ?? []).length === 0 ? (
           <p className="text-sm text-gray-700">No media uploaded yet.</p>
         ) : (
@@ -57,7 +59,7 @@ export default function ProjectTabPanels({ active, project }: Props) {
                   >
                     <Image
                       src={getCloudinaryOptimizedImage(m.url)}
-                      alt={m.alt_text ?? project.name}
+                      alt={`Open plots ${project.city} – ${project.name}`}
                       fill
                       sizes="(max-width: 768px) 50vw, 33vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -79,7 +81,7 @@ export default function ProjectTabPanels({ active, project }: Props) {
             >
               <Image
                 src={getCloudinaryOptimizedImage(preview.url)}
-                alt={preview.alt}
+                alt={`Open plots ${project.city} – ${project.name}`}
                 width={1600}
                 height={900}
                 sizes="100vw"
@@ -112,7 +114,7 @@ export default function ProjectTabPanels({ active, project }: Props) {
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title={`Map of ${project.name}`}
+            title={`Map – Open plots in ${project.city}`}
           />
         </div>
       ) : (
